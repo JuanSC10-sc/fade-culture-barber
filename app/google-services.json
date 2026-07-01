@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "864889258387",
+    "project_id": "fade-culture-barber",
+    "storage_bucket": "fade-culture-barber.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864889258387:android:312e07fc2ad54c0000a866",
+        "android_client_info": {
+          "package_name": "com.fadeculture.barber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF0E-lCvtOv5SPC5SAl4EpTI66Vt2Hg8A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
