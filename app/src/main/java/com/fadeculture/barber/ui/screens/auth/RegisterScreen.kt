@@ -173,6 +173,9 @@ fun RegisterScreen(navController: NavHostController) {
                     !Patterns.EMAIL_ADDRESS.matcher(correo).matches() -> {
                         Toast.makeText(context, "Ingrese un correo válido", Toast.LENGTH_SHORT).show()
                     }
+                    telefono.length < 9 -> {
+                        Toast.makeText(context, "Ingrese un número de teléfono válido", Toast.LENGTH_SHORT).show()
+                    }
                     contrasena.length < 6 -> {
                         Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
                     }
@@ -200,7 +203,7 @@ fun RegisterScreen(navController: NavHostController) {
 
                                     // Guardamos en la bd
                                     if (userId != null) {
-                                        db.collection("usuarios").document(userId)
+                                        db.collection("users").document(userId)
                                             .set(userMap)
                                             .addOnSuccessListener {
                                                 Toast.makeText(context, "¡Registro Exitoso!", Toast.LENGTH_SHORT).show()

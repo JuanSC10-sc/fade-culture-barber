@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.fadeculture.barber.ui.screens.admin.AdminHomeScreen
+import com.fadeculture.barber.ui.screens.admin.AdminMainScreen
 import com.fadeculture.barber.ui.screens.auth.LoginScreen
 import com.fadeculture.barber.ui.screens.auth.RegisterScreen
 import com.fadeculture.barber.ui.screens.auth.SplashScreen
@@ -19,7 +21,7 @@ fun SetupNavGraph(navController: NavHostController) {
     // startDestination Splash Screen
     NavHost(
         navController = navController,
-        startDestination = Screen.Splash.route
+        startDestination = Screen.AdminHome.route
     ) {
         // 1. Pantalla de Splash
         composable(route = Screen.Splash.route) {
@@ -50,9 +52,7 @@ fun SetupNavGraph(navController: NavHostController) {
 
         // 6. Dashboard del Administrador / Recepción
         composable(route = Screen.AdminHome.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Panel de Control General (Admin)")
-            }
+            AdminMainScreen(navController = navController)
         }
     }
 }

@@ -13,6 +13,7 @@ firebaseBom = "33.1.1"
 navigationRuntimeKtx = "2.9.8"
 navigationCompose = "2.9.8"
 material3Lint = "1.4.0"
+ui = "1.11.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +37,8 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-compose-material3-lint = { group = "androidx.compose.material3", name = "material3-lint", version.ref = "material3Lint" }
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
