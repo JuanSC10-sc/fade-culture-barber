@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.fadeculture.barber.domain.model.Servicio
+import com.fadeculture.barber.data.model.Servicio
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable

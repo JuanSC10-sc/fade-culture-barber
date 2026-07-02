@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.fadeculture.barber.domain.model.Barbero
+import com.fadeculture.barber.data.model.Barbero
 import com.google.firebase.firestore.FirebaseFirestore
 import android.util.Patterns
 import androidx.compose.foundation.verticalScroll

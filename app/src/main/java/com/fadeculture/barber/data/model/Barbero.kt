@@ -1,4 +1,4 @@
-package com.fadeculture.barber.domain.model
+package com.fadeculture.barber.data.model
 
 data class Barbero(
     val id: String = "",

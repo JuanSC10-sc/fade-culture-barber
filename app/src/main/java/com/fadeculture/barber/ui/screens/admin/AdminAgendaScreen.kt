@@ -5,7 +5,6 @@ import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,7 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fadeculture.barber.domain.model.BloqueoAgenda
+import com.fadeculture.barber.data.model.BloqueoAgenda
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
 
