@@ -44,14 +44,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lint.kotlin.metadata.Visibility
 import androidx.navigation.NavHostController
 import com.fadeculture.barber.R
 import com.fadeculture.barber.ui.navigation.Screen
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
     val context = LocalContext.current
+
+    // Instancias de Firebase
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     // Variables de estado
     var email by remember { mutableStateOf("") }
@@ -70,7 +75,6 @@ fun LoginScreen(navController: NavHostController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
 
         Image(
             painter = painterResource(id = R.drawable.logo),
@@ -158,17 +162,44 @@ fun LoginScreen(navController: NavHostController) {
                         Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    Toast.makeText(context, "¡Inicio de sesión exitoso!", Toast.LENGTH_SHORT).show()
+                                    val uid = auth.currentUser?.uid ?: ""
 
-                                    // Redirigimos
-                                    navController.navigate(Screen.ClientHome.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
-                                    }
+                                    // LÓGICA DE ROLES: Consultamos la colección "usuarios"
+                                    db.collection("usuarios").document(uid).get()
+                                        .addOnSuccessListener { document ->
+                                            Toast.makeText(context, "¡Inicio de sesión exitoso!", Toast.LENGTH_SHORT).show()
+
+                                            // Extraemos el rol (por defecto será cliente si algo falla)
+                                            val rol = document.getString("rol") ?: "cliente"
+
+                                            // Redirigimos según el rol
+                                            when (rol) {
+                                                "admin" -> {
+                                                    navController.navigate(Screen.AdminHome.route) {
+                                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                                    }
+                                                }
+                                                "barbero" -> {
+                                                    // TODO: Cambiar "barbero_home" por la ruta real de tu Screen cuando la crees
+                                                    navController.navigate("barbero_home") {
+                                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                                    }
+                                                }
+                                                else -> {
+                                                    // Cliente (Fallback)
+                                                    navController.navigate(Screen.ClientHome.route) {
+                                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(context, "Error al recuperar datos del usuario.", Toast.LENGTH_SHORT).show()
+                                        }
+
                                 } else {
                                     val exceptionMessage = task.exception?.message ?: ""
 
@@ -181,8 +212,6 @@ fun LoginScreen(navController: NavHostController) {
                                     Toast.makeText(context, mensajeError, Toast.LENGTH_LONG).show()
                                 }
                             }
-
-
                     }
                 }
             },

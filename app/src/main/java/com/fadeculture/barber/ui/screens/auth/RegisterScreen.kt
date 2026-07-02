@@ -203,12 +203,12 @@ fun RegisterScreen(navController: NavHostController) {
 
                                     // Guardamos en la bd
                                     if (userId != null) {
-                                        db.collection("users").document(userId)
+                                        db.collection("usuarios").document(userId)
                                             .set(userMap)
                                             .addOnSuccessListener {
                                                 Toast.makeText(context, "¡Registro Exitoso!", Toast.LENGTH_SHORT).show()
                                                 // Redirigimos al Home
-                                                navController.navigate(Screen.ClientHome.route) {
+                                                navController.navigate(Screen.Login.route) {
                                                     popUpTo(Screen.Register.route) { inclusive = true }
                                                 }
                                             }

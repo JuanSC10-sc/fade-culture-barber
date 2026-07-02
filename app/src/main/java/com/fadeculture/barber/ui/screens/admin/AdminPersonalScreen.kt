@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -50,17 +52,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.fadeculture.barber.domain.model.Barbero
 import com.google.firebase.firestore.FirebaseFirestore
+import android.util.Patterns
+import androidx.compose.foundation.verticalScroll
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+
 
 @Composable
 fun AdminPersonalScreen(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
+    val scrollState = rememberScrollState()
 
     // Colores premium
     val darkBackground = Color(0xFF121212)
@@ -70,7 +81,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
     // Estados de navegación interna de la pantalla
     var isFormOpen by remember { mutableStateOf(false) }
     var barberoSeleccionadoEdicion by remember { mutableStateOf<Barbero?>(null) }
-    var barberoAgendaSeleccionado by remember { mutableStateOf<Barbero?>(null) } // Controla la pantalla de agenda
+    var barberoAgendaSeleccionado by remember { mutableStateOf<Barbero?>(null) }
 
     // Estados para los campos del formulario
     var nombres by remember { mutableStateOf("") }
@@ -78,6 +89,11 @@ fun AdminPersonalScreen(navController: NavHostController) {
     var fotoUrl by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    // Control de visibilidad de contraseñas (Ojitos)
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     // Lista de barberos traída de Firestore
     var listaBarberos by remember { mutableStateOf<List<Barbero>>(emptyList()) }
@@ -96,6 +112,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
                             id = doc.id,
                             nombres = doc.getString("nombres") ?: "",
                             especialidad = doc.getString("especialidad") ?: "",
+                            correo = doc.getString("correo") ?: "",
                             fotoUrl = doc.getString("fotoUrl") ?: "",
                             estadoActivo = doc.getBoolean("estadoActivo") ?: true
                         )
@@ -110,11 +127,17 @@ fun AdminPersonalScreen(navController: NavHostController) {
         if (barberoSeleccionadoEdicion != null) {
             nombres = barberoSeleccionadoEdicion!!.nombres
             especialidad = barberoSeleccionadoEdicion!!.especialidad
+            email = barberoSeleccionadoEdicion!!.correo
             fotoUrl = barberoSeleccionadoEdicion!!.fotoUrl
+            password = ""
+            confirmPassword = ""
         } else {
             nombres = ""
             especialidad = ""
             fotoUrl = ""
+            email = ""
+            password = ""
+            confirmPassword = ""
         }
     }
 
@@ -143,18 +166,18 @@ fun AdminPersonalScreen(navController: NavHostController) {
                 .background(darkBackground)
         ) {
             if (barberoAgendaSeleccionado != null) {
-                // --- CAPA A: PANTALLA DE AGENDA DE BLOQUEOS ---
                 AdminAgendaScreen(
                     barberId = barberoAgendaSeleccionado!!.id,
                     barberName = barberoAgendaSeleccionado!!.nombres,
                     onBack = { barberoAgendaSeleccionado = null }
                 )
             } else if (isFormOpen) {
-                // --- CAPA B: FORMULARIO DE AGREGAR / EDITAR BARBERO ---
+                // --- FORMULARIO DE AGREGAR / EDITAR BARBERO (Con scroll para evitar recortes) ---
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(24.dp)
+                        .verticalScroll(scrollState)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -172,46 +195,110 @@ fun AdminPersonalScreen(navController: NavHostController) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     AdminTextField(value = nombres, onValueChange = { nombres = it }, label = "Nombres y Apellidos", goldAccent = goldAccent)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AdminTextField(value = especialidad, onValueChange = { especialidad = it }, label = "Especialidad (Ej: Urban, Clásico, Barba)", goldAccent = goldAccent)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AdminTextField(value = email, onValueChange = { email = it }, label = "Correo Electrónico ", goldAccent = goldAccent)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AdminTextField(value = password, onValueChange = { password = it }, label = "Contraseña", goldAccent = goldAccent)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AdminTextField(value = fotoUrl, onValueChange = { fotoUrl = it }, label = "URL Enlace de la Foto", goldAccent = goldAccent)
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                    AdminTextField(value = especialidad, onValueChange = { especialidad = it }, label = "Especialidad (Ej: Urban, Clásico)", goldAccent = goldAccent)
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    AdminTextField(value = email, onValueChange = { email = it }, label = "Correo Electrónico", goldAccent = goldAccent, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Ocultamos las credenciales en modo Edición para proteger la seguridad del usuario existente
+                    if (barberoSeleccionadoEdicion == null) {
+                        // Campo Contraseña con Ojito
+                        AdminPasswordField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Contraseña",
+                            passwordVisible = passwordVisible,
+                            onVisibilityChange = { passwordVisible = it },
+                            goldAccent = goldAccent
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Campo Confirmar Contraseña con Ojito
+                        AdminPasswordField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
+                            label = "Confirmar Contraseña",
+                            passwordVisible = confirmPasswordVisible,
+                            onVisibilityChange = { confirmPasswordVisible = it },
+                            goldAccent = goldAccent
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+
+                    AdminTextField(value = fotoUrl, onValueChange = { fotoUrl = it }, label = "URL Enlace de la Foto", goldAccent = goldAccent)
+                    Spacer(modifier = Modifier.height(32.dp))
 
                     Button(
                         onClick = {
-                            if (nombres.isBlank() || especialidad.isBlank()) {
-                                Toast.makeText(context, "Por favor complete los campos obligatorios", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
+                            // VALIDACIONES DE ENTRADA ESTRICTAS
+                            when {
+                                nombres.isBlank() || especialidad.isBlank() || email.isBlank() -> {
+                                    Toast.makeText(context, "Complete todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                                }
+                                !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                                    Toast.makeText(context, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT).show()
+                                }
+                                barberoSeleccionadoEdicion == null && password.length < 6 -> {
+                                    Toast.makeText(context, "La contraseña debe tener mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
+                                }
+                                barberoSeleccionadoEdicion == null && password != confirmPassword -> {
+                                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                                }
+                                else -> {
+                                    val barberoMap = hashMapOf(
+                                        "nombres" to nombres,
+                                        "especialidad" to especialidad,
+                                        "correo" to email,
+                                        "fotoUrl" to fotoUrl,
+                                        "estadoActivo" to if (barberoSeleccionadoEdicion != null) barberoSeleccionadoEdicion!!.estadoActivo else true
+                                    )
 
-                            val barberoMap = hashMapOf(
-                                "nombres" to nombres,
-                                "especialidad" to especialidad,
-                                "fotoUrl" to fotoUrl,
-                                "estadoActivo" to if (barberoSeleccionadoEdicion != null) barberoSeleccionadoEdicion!!.estadoActivo else true
-                            )
+                                    if (barberoSeleccionadoEdicion == null) {
+                                        // --- REGISTRO SEGURO DE CREDENCIALES ---
+                                        // Creamos una app Firebase secundaria limpia en memoria para registrar las credenciales del barbero sin tumbar la sesión del Administrador actual
+                                        val secondaryApp = FirebaseApp.getApps(context).firstOrNull { it.name == "Secondary" }
+                                            ?: FirebaseApp.initializeApp(context, FirebaseApp.getInstance().options, "Secondary")
+                                        val secondaryAuth = FirebaseAuth.getInstance(secondaryApp)
 
-                            if (barberoSeleccionadoEdicion == null) {
-                                db.collection("barberos").add(barberoMap)
-                                    .addOnSuccessListener {
-                                        Toast.makeText(context, "Barbero registrado con éxito", Toast.LENGTH_SHORT).show()
-                                        isFormOpen = false
+                                        secondaryAuth.createUserWithEmailAndPassword(email, password)
+                                            .addOnCompleteListener { authTask ->
+                                                if (authTask.isSuccessful) {
+                                                    val bUid = authTask.result?.user?.uid ?: ""
+
+                                                    // 1. Guardamos en la colección de barberos para la app
+                                                    db.collection("barberos").document(bUid).set(barberoMap)
+
+                                                    // 2. Guardamos en la colección central de "users" con el rol "barbero" para que LoginScreen lo redireccione correctamente
+                                                    // 2. Guardamos en TU colección central "usuarios" con el campo "rol"
+                                                    val userRoleMap = hashMapOf(
+                                                        "nombres" to nombres,
+                                                        "correo" to email,
+                                                        "rol" to "barbero" // <-- Escrito exactamente como en tu base de datos
+                                                    )
+                                                    db.collection("usuarios").document(bUid).set(userRoleMap)
+
+                                                    Toast.makeText(context, "Barbero y credenciales creados con éxito", Toast.LENGTH_SHORT).show()
+                                                    secondaryAuth.signOut() // Limpiamos la instancia secundaria
+                                                    isFormOpen = false
+                                                } else {
+                                                    Toast.makeText(context, "Error en Firebase Auth: ${authTask.exception?.message}", Toast.LENGTH_LONG).show()
+                                                }
+                                            }
+                                    } else {
+                                        // --- ACTUALIZACIÓN DE DATOS REGULARES ---
+                                        db.collection("barberos").document(barberoSeleccionadoEdicion!!.id).set(barberoMap)
+                                            .addOnSuccessListener {
+                                                Toast.makeText(context, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
+                                                isFormOpen = false
+                                            }
                                     }
-                            } else {
-                                db.collection("barberos").document(barberoSeleccionadoEdicion!!.id).set(barberoMap)
-                                    .addOnSuccessListener {
-                                        Toast.makeText(context, "Datos actualizados", Toast.LENGTH_SHORT).show()
-                                        isFormOpen = false
-                                    }
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -220,9 +307,10 @@ fun AdminPersonalScreen(navController: NavHostController) {
                     ) {
                         Text("Guardar Barbero", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             } else {
-                // --- CAPA C: LISTADO GENERAL EN TIEMPO REAL ---
+                // --- VISTA: LISTADO GENERAL ---
                 Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
                     Text(text = "Lista de Personal", color = goldAccent, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Text(text = "Monitorea el equipo de Fade Culture", color = Color.LightGray, fontSize = 14.sp)
@@ -247,7 +335,6 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                         db.collection("barberos").document(barbero.id)
                                             .update("estadoActivo", !barbero.estadoActivo)
                                     },
-                                    // Conectamos el botón de agenda de la tarjeta
                                     onManageAgenda = {
                                         barberoAgendaSeleccionado = barbero
                                     }
@@ -274,33 +361,24 @@ fun BarberoCard(
     val opacidad = if (barbero.estadoActivo) 1f else 0.5f
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(opacidad),
+        modifier = Modifier.fillMaxWidth().alpha(opacidad),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = cardBackground)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen del barbero mediante Coil
             if (barbero.fotoUrl.isNotBlank()) {
                 AsyncImage(
                     model = barbero.fotoUrl,
                     contentDescription = barbero.nombres,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.size(64.dp).clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(Color(0xFF2A2415), shape = CircleShape),
+                    modifier = Modifier.size(64.dp).background(Color(0xFF2A2415), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Person, contentDescription = null, tint = goldAccent, modifier = Modifier.size(32.dp))
@@ -309,14 +387,8 @@ fun BarberoCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Textos informativos
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = barbero.nombres,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = barbero.nombres, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (barbero.estadoActivo) barbero.especialidad else "DE BAJA (Oculto)",
@@ -326,17 +398,13 @@ fun BarberoCard(
                 )
             }
 
-            // Acciones: Agenda, Editar y Cambiar Estado
             Row {
-                // NUEVO BOTÓN: Calendario para gestionar bloqueos
                 IconButton(onClick = onManageAgenda) {
                     Icon(Icons.Default.DateRange, contentDescription = "Gestionar Agenda", tint = goldAccent)
                 }
-
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color.LightGray)
                 }
-
                 IconButton(onClick = onToggleStatus) {
                     Icon(
                         imageVector = if (barbero.estadoActivo) Icons.Default.Visibility else Icons.Default.VisibilityOff,
@@ -349,25 +417,60 @@ fun BarberoCard(
     }
 }
 
-// --- Input personalizado estilizado ---
+// --- Input personalizado de Contraseña con Ojito ---
 @Composable
-fun AdminTextField(
+fun AdminPasswordField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    passwordVisible: Boolean,
+    onVisibilityChange: (Boolean) -> Unit,
     goldAccent: Color
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = goldAccent) }, // Reutilizado de diseño base
+        trailingIcon = {
+            val iconImage = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+            IconButton(onClick = { onVisibilityChange(!passwordVisible) }) {
+                Icon(iconImage, contentDescription = "Mostrar/Ocultar", tint = Color.Gray)
+            }
+        },
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = goldAccent,
-            unfocusedBorderColor = Color.Gray,
-            focusedLabelColor = goldAccent,
-            unfocusedLabelColor = Color.LightGray,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
+            focusedBorderColor = goldAccent, unfocusedBorderColor = Color.Gray,
+            focusedLabelColor = goldAccent, unfocusedLabelColor = Color.LightGray,
+            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+            cursorColor = goldAccent
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true
+    )
+}
+
+
+// --- Input personalizado de Texto regular ---
+@Composable
+fun AdminTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    goldAccent: Color,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        keyboardOptions = keyboardOptions,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = goldAccent, unfocusedBorderColor = Color.Gray,
+            focusedLabelColor = goldAccent, unfocusedLabelColor = Color.LightGray,
+            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
             cursorColor = goldAccent
         ),
         modifier = Modifier.fillMaxWidth(),

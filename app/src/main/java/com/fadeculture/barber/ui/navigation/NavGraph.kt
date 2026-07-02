@@ -21,7 +21,7 @@ fun SetupNavGraph(navController: NavHostController) {
     // startDestination Splash Screen
     NavHost(
         navController = navController,
-        startDestination = Screen.AdminHome.route
+        startDestination = Screen.Login.route
     ) {
         // 1. Pantalla de Splash
         composable(route = Screen.Splash.route) {

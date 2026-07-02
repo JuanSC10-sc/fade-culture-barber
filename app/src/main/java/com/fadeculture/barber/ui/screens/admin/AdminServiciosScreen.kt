@@ -173,13 +173,13 @@ fun AdminServiciosScreen(navController: NavHostController) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    AdminTextField(value = titulo, onValueChange = { titulo = it }, label = "Nombre del Servicio (Ej: Corte Degradado)", goldAccent = goldAccent)
+                    AdminServicioTextField(value = titulo, onValueChange = { titulo = it }, label = "Nombre del Servicio (Ej: Corte Degradado)", goldAccent = goldAccent)
                     Spacer(modifier = Modifier.height(14.dp))
-                    AdminTextField(value = descripcion, onValueChange = { descripcion = it }, label = "Descripción o detalles del servicio", goldAccent = goldAccent)
+                    AdminServicioTextField(value = descripcion, onValueChange = { descripcion = it }, label = "Descripción o detalles del servicio", goldAccent = goldAccent)
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Input de Precio con configuración de teclado decimal
-                    AdminTextField(
+                    AdminServicioTextField(
                         value = precio,
                         onValueChange = { precio = it },
                         label = "Precio (S/.)",
@@ -189,7 +189,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Input de Duración con configuración de teclado numérico entero
-                    AdminTextField(
+                    AdminServicioTextField(
                         value = duracion,
                         onValueChange = { duracion = it },
                         label = "Duración estimada (Minutos)",
@@ -197,7 +197,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     Spacer(modifier = Modifier.height(14.dp))
-                    AdminTextField(value = imagenUrl, onValueChange = { imagenUrl = it }, label = "URL Enlace de la Foto Referencial", goldAccent = goldAccent)
+                    AdminServicioTextField(value = imagenUrl, onValueChange = { imagenUrl = it }, label = "URL Enlace de la Foto Referencial", goldAccent = goldAccent)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -356,7 +356,7 @@ fun ServicioCard(
 
 // --- Input estilizado reutilizado con KeyboardOptions configurable ---
 @Composable
-fun AdminTextField(
+fun AdminServicioTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
