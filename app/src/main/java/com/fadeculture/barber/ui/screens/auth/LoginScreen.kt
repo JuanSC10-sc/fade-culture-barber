@@ -183,14 +183,13 @@ fun LoginScreen(navController: NavHostController) {
                                                     }
                                                 }
                                                 "barbero" -> {
-                                                    // TODO: Cambiar "barbero_home" por la ruta real de tu Screen cuando la crees
-                                                    navController.navigate("barbero_home") {
+                                                    navController.navigate(Screen.BarberHome.route) {
                                                         popUpTo(Screen.Login.route) { inclusive = true }
                                                     }
                                                 }
                                                 else -> {
-                                                    // Cliente (Fallback)
-                                                    navController.navigate(Screen.ClientHome.route) {
+                                                    // 👈 CAMBIO AQUÍ: Redirigimos al Main del Cliente
+                                                    navController.navigate(Screen.ClientMain.route) {
                                                         popUpTo(Screen.Login.route) { inclusive = true }
                                                     }
                                                 }
@@ -220,7 +219,7 @@ fun LoginScreen(navController: NavHostController) {
                 .height(55.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = goldAccent,
-                contentColor = Color.Black // Letra negra sobre fondo dorado destaca mucho
+                contentColor = Color.Black
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -236,7 +235,6 @@ fun LoginScreen(navController: NavHostController) {
                 color = goldAccent,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
-                    // Navegación segura usando nuestro Screen.kt
                     navController.navigate(Screen.Register.route)
                 }
             )

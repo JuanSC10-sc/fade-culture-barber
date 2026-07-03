@@ -7,5 +7,6 @@ data class Servicio(
     val precioSoles: Double = 0.0,
     val duracionMinutos: Int = 30,
     val imagenUrl: String = "",
-    val estadoActivo: Boolean = true // 👈 Asegúrate de tener esta línea agregada
+    val categoria: String = "Corte",
+    val estadoActivo: Boolean = true //
 )

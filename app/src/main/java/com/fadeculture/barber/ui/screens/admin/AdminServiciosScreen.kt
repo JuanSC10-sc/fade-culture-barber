@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -29,6 +31,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,10 +64,12 @@ import coil.compose.AsyncImage
 import com.fadeculture.barber.data.model.Servicio
 import com.google.firebase.firestore.FirebaseFirestore
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminServiciosScreen(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
+    val scrollState = rememberScrollState() // Para prevenir que el teclado tape los campos
 
     // Colores premium
     val darkBackground = Color(0xFF121212)
@@ -78,6 +86,11 @@ fun AdminServiciosScreen(navController: NavHostController) {
     var precio by remember { mutableStateOf("") }
     var duracion by remember { mutableStateOf("") }
     var imagenUrl by remember { mutableStateOf("") }
+
+    // Estados para el Selector de Categoría (Dropdown)
+    var categoria by remember { mutableStateOf("Corte") }
+    var expandedCategoria by remember { mutableStateOf(false) }
+    val opcionesCategoria = listOf("Corte", "Barba", "Tinte", "Ondulación", "Servicios Completos")
 
     // Lista de servicios de Firestore
     var listaServicios by remember { mutableStateOf<List<Servicio>>(emptyList()) }
@@ -99,6 +112,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                             precioSoles = doc.getDouble("precioSoles") ?: 0.0,
                             duracionMinutos = doc.getLong("duracionMinutos")?.toInt() ?: 30,
                             imagenUrl = doc.getString("imagenUrl") ?: "",
+                            categoria = doc.getString("categoria") ?: "Corte", // 👈 RECUPERAMOS LA CATEGORÍA
                             estadoActivo = doc.getBoolean("estadoActivo") ?: true
                         )
                     }
@@ -115,12 +129,14 @@ fun AdminServiciosScreen(navController: NavHostController) {
             precio = servicioSeleccionadoEdicion!!.precioSoles.toString()
             duracion = servicioSeleccionadoEdicion!!.duracionMinutos.toString()
             imagenUrl = servicioSeleccionadoEdicion!!.imagenUrl
+            categoria = servicioSeleccionadoEdicion!!.categoria // 👈 SETEAMOS LA CATEGORÍA AL EDITAR
         } else {
             titulo = ""
             descripcion = ""
             precio = ""
             duracion = ""
             imagenUrl = ""
+            categoria = "Corte"
         }
     }
 
@@ -154,6 +170,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(24.dp)
+                        .verticalScroll(scrollState)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -175,27 +192,59 @@ fun AdminServiciosScreen(navController: NavHostController) {
 
                     AdminServicioTextField(value = titulo, onValueChange = { titulo = it }, label = "Nombre del Servicio (Ej: Corte Degradado)", goldAccent = goldAccent)
                     Spacer(modifier = Modifier.height(14.dp))
+
+                    // --- SELECTOR DE CATEGORÍA VISUAL ---
+                    ExposedDropdownMenuBox(
+                        expanded = expandedCategoria,
+                        onExpandedChange = { expandedCategoria = !expandedCategoria },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = categoria,
+                            onValueChange = {},
+                            readOnly = true, // El usuario no puede escribir, solo seleccionar
+                            label = { Text("Categoría del Servicio") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategoria) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = goldAccent, unfocusedBorderColor = Color.Gray,
+                                focusedLabelColor = goldAccent, unfocusedLabelColor = Color.LightGray,
+                                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                                cursorColor = goldAccent
+                            ),
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expandedCategoria,
+                            onDismissRequest = { expandedCategoria = false },
+                            modifier = Modifier.background(cardBackground)
+                        ) {
+                            opcionesCategoria.forEach { seleccion ->
+                                DropdownMenuItem(
+                                    text = { Text(seleccion, color = Color.White) },
+                                    onClick = {
+                                        categoria = seleccion
+                                        expandedCategoria = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     AdminServicioTextField(value = descripcion, onValueChange = { descripcion = it }, label = "Descripción o detalles del servicio", goldAccent = goldAccent)
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Input de Precio con configuración de teclado decimal
-                    AdminServicioTextField(
-                        value = precio,
-                        onValueChange = { precio = it },
-                        label = "Precio (S/.)",
-                        goldAccent = goldAccent,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            AdminServicioTextField(value = precio, onValueChange = { precio = it }, label = "Precio (S/.)", goldAccent = goldAccent, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            AdminServicioTextField(value = duracion, onValueChange = { duracion = it }, label = "Minutos", goldAccent = goldAccent, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        }
+                    }
 
-                    // Input de Duración con configuración de teclado numérico entero
-                    AdminServicioTextField(
-                        value = duracion,
-                        onValueChange = { duracion = it },
-                        label = "Duración estimada (Minutos)",
-                        goldAccent = goldAccent,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
                     Spacer(modifier = Modifier.height(14.dp))
                     AdminServicioTextField(value = imagenUrl, onValueChange = { imagenUrl = it }, label = "URL Enlace de la Foto Referencial", goldAccent = goldAccent)
 
@@ -217,6 +266,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                                 "precioSoles" to precioDouble,
                                 "duracionMinutos" to duracionInt,
                                 "imagenUrl" to imagenUrl,
+                                "categoria" to categoria, // 👈 SE GUARDA LA CATEGORÍA EN FIRESTORE
                                 "estadoActivo" to if (servicioSeleccionadoEdicion != null) servicioSeleccionadoEdicion!!.estadoActivo else true
                             )
 
@@ -238,12 +288,9 @@ fun AdminServiciosScreen(navController: NavHostController) {
                         colors = ButtonDefaults.buttonColors(containerColor = goldAccent, contentColor = Color.Black),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
-                            text = "Guardar Servicio",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                        Text("Guardar Servicio", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             } else {
                 // --- VISTA: LISTADO EN TIEMPO REAL ---
@@ -310,7 +357,6 @@ fun ServicioCard(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen del corte mediante Coil
             if (servicio.imagenUrl.isNotBlank()) {
                 AsyncImage(
                     model = servicio.imagenUrl,
@@ -332,7 +378,8 @@ fun ServicioCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = servicio.titulo, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(text = "${servicio.duracionMinutos} min • S/. ${servicio.precioSoles}", color = goldAccent, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                // Mostramos también la categoría debajo del título para control visual
+                Text(text = "${servicio.categoria} • ${servicio.duracionMinutos} min • S/. ${servicio.precioSoles}", color = goldAccent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 if (!servicio.estadoActivo) {
                     Text(text = "OCULTO PARA CLIENTES", color = Color(0xFFEF5350), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }

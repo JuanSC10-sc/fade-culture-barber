@@ -38,11 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.fadeculture.barber.ui.navigation.Screen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun ClientHomeScreen(navController: NavHostController) {
+fun ClientHomeScreen(navController: NavHostController,
+                     onNavigateTab: (String) -> Unit) {
     // Paleta de colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
@@ -146,7 +148,7 @@ fun ClientHomeScreen(navController: NavHostController) {
             icon = Icons.Default.ContentCut,
             cardBackground = cardBackground,
             goldAccent = goldAccent,
-            onClick = { /* TODO: Navegar al catálogo */ }
+            onClick = { onNavigateTab("client_catalogo") }
         )
 
         Spacer(modifier = Modifier.height(32.dp))

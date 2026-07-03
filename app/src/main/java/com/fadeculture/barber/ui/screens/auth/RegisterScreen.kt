@@ -207,9 +207,10 @@ fun RegisterScreen(navController: NavHostController) {
                                             .set(userMap)
                                             .addOnSuccessListener {
                                                 Toast.makeText(context, "¡Registro Exitoso!", Toast.LENGTH_SHORT).show()
-                                                // Redirigimos al Home
-                                                navController.navigate(Screen.Login.route) {
-                                                    popUpTo(Screen.Register.route) { inclusive = true }
+
+                                                // 👈 Redirigimos al Contenedor Principal (ClientMain) y limpiamos el BackStack
+                                                navController.navigate(Screen.ClientMain.route) {
+                                                    popUpTo(Screen.Login.route) { inclusive = true }
                                                 }
                                             }
                                             .addOnFailureListener { e ->
@@ -247,8 +248,6 @@ fun RegisterScreen(navController: NavHostController) {
         }
     }
 }
-
-
 
 @Composable
 fun CustomTextField(

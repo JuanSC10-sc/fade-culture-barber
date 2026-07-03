@@ -14,14 +14,17 @@ import com.fadeculture.barber.ui.screens.admin.AdminMainScreen
 import com.fadeculture.barber.ui.screens.auth.LoginScreen
 import com.fadeculture.barber.ui.screens.auth.RegisterScreen
 import com.fadeculture.barber.ui.screens.auth.SplashScreen
+import com.fadeculture.barber.ui.screens.barber.BarberAgendaScreen
+import com.fadeculture.barber.ui.screens.client.CatalogoScreen
 import com.fadeculture.barber.ui.screens.client.ClientHomeScreen
+import com.fadeculture.barber.ui.screens.client.ClientMainScreen
 
 @Composable
 fun SetupNavGraph(navController: NavHostController) {
     // startDestination Splash Screen
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = Screen.Splash.route
     ) {
         // 1. Pantalla de Splash
         composable(route = Screen.Splash.route) {
@@ -39,15 +42,18 @@ fun SetupNavGraph(navController: NavHostController) {
         }
 
         // 4. Dashboard del Cliente
-        composable(route = Screen.ClientHome.route) {
-            ClientHomeScreen(navController = navController)
+        composable(route = Screen.ClientMain.route) {
+            ClientMainScreen(navController = navController)
+        }
+
+        // Catalogo para el Cliente
+        composable(Screen.Catalogo.route) {
+            CatalogoScreen()
         }
 
         // 5. Dashboard del Barbero
         composable(route = Screen.BarberHome.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Panel del Barbero - Gestiona tus Citas del Día")
-            }
+            BarberAgendaScreen(navController = navController)
         }
 
         // 6. Dashboard del Administrador / Recepción
