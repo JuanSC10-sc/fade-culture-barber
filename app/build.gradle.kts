@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.navigation.common.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,6 +70,7 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.firebase.firestore)
     implementation(libs.coil.compose)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 
 

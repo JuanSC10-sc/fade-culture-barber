@@ -9,6 +9,10 @@ sealed class Screen(val route: String) {
     // Dashboards principales según el Rol (Rol-based UI)
     object ClientHome : Screen("client_home")
     object ClientMain : Screen("client_main")
+
+    object Comprobante : Screen("client_comprobante/{citaId}") {
+        fun createRoute(citaId: String) = "client_comprobante/$citaId"
+    }
     object Catalogo : Screen("client_catalogo")
     object BarberHome : Screen("barber_home")
     object AdminHome : Screen("admin_home")

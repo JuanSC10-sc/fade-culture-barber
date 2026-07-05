@@ -7,8 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.fadeculture.barber.ui.screens.admin.AdminHomeScreen
 import com.fadeculture.barber.ui.screens.admin.AdminMainScreen
 import com.fadeculture.barber.ui.screens.auth.LoginScreen
@@ -18,6 +20,7 @@ import com.fadeculture.barber.ui.screens.barber.BarberAgendaScreen
 import com.fadeculture.barber.ui.screens.client.CatalogoScreen
 import com.fadeculture.barber.ui.screens.client.ClientHomeScreen
 import com.fadeculture.barber.ui.screens.client.ClientMainScreen
+import com.fadeculture.barber.ui.screens.client.ClientComprobanteScreen
 
 @Composable
 fun SetupNavGraph(navController: NavHostController) {
@@ -49,6 +52,15 @@ fun SetupNavGraph(navController: NavHostController) {
         // Catalogo para el Cliente
         composable(Screen.Catalogo.route) {
             CatalogoScreen()
+        }
+
+        // Comprobante de Cita para el Cliente
+        composable(
+            route = Screen.Comprobante.route,
+            arguments = listOf(navArgument("citaId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val citaId = backStackEntry.arguments?.getString("citaId") ?: ""
+            ClientComprobanteScreen(navController = navController, citaId = citaId)
         }
 
         // 5. Dashboard del Barbero
