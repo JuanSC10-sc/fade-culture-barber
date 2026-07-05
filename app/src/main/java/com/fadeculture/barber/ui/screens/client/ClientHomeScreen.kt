@@ -126,7 +126,7 @@ fun ClientHomeScreen(navController: NavHostController,
             icon = Icons.Default.EditCalendar,
             cardBackground = cardBackground,
             goldAccent = goldAccent,
-            onClick = { /* TODO: Navegar a reservas */ }
+            onClick = { onNavigateTab("client_reservar") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))

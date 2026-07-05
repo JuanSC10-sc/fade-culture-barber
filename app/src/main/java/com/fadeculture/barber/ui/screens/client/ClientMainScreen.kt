@@ -38,7 +38,7 @@ fun ClientMainScreen(navController: NavHostController) {
                     navController = navController,
                     onNavigateTab = { ruta -> currentRoute = ruta } // Permite saltar a otra pestaña desde botones internos
                 )
-                "client_reservar" -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Pantalla Generar Cita (Próximamente)", color = Color.White) }
+                "client_reservar" -> ClientReservarScreen()
                 "client_mis_citas" -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Pantalla Mis Citas (Próximamente)", color = Color.White) }
                 "client_catalogo" -> CatalogoScreen() // Tu pantalla de catálogo actual
                 "client_perfil" -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Pantalla Perfil (Próximamente)", color = Color.White) }
