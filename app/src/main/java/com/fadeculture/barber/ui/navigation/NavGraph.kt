@@ -21,6 +21,7 @@ import com.fadeculture.barber.ui.screens.client.CatalogoScreen
 import com.fadeculture.barber.ui.screens.client.ClientHomeScreen
 import com.fadeculture.barber.ui.screens.client.ClientMainScreen
 import com.fadeculture.barber.ui.screens.client.ClientComprobanteScreen
+import com.fadeculture.barber.ui.screens.barber.BarberMainScreen
 
 @Composable
 fun SetupNavGraph(navController: NavHostController) {
@@ -64,8 +65,9 @@ fun SetupNavGraph(navController: NavHostController) {
         }
 
         // 5. Dashboard del Barbero
-        composable(route = Screen.BarberHome.route) {
-            BarberAgendaScreen(navController = navController)
+        // 5. Dashboard del Barbero
+        composable(route = Screen.BarberMain.route) { //
+            BarberMainScreen(rootNavController = navController) //
         }
 
         // 6. Dashboard del Administrador / Recepción

@@ -1,112 +1,375 @@
 package com.fadeculture.barber.ui.screens.admin
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminPerfilScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val scrollState = rememberScrollState()
+
+    // Colores corporativos
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
-    val auth = FirebaseAuth.getInstance()
+    val errorColor = Color(0xFFEF5350)
 
-    // Obtenemos el correo del usuario actual (si está logueado)
-    val adminEmail = auth.currentUser?.email ?: "admin@fadeculture.com"
+    // Estados de Datos (Mapeados de Firestore)
+    var nombres by remember { mutableStateOf("") }
+    var apellidos by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf(currentUser?.email ?: "") }
+    var rol by remember { mutableStateOf("admin") }
+    var cargando by remember { mutableStateOf(true) }
 
-    Column(
+    // Estados para Diálogo de Contraseña
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var contrasenaActual by remember { mutableStateOf("") }
+    var contrasenaNueva by remember { mutableStateOf("") }
+    var procesandoContrasena by remember { mutableStateOf(false) }
+
+    // Estados para visibilidad ("Ojito")
+    var actualVisible by remember { mutableStateOf(false) }
+    var nuevaVisible by remember { mutableStateOf(false) }
+
+    // 1. Cargar Datos del Administrador
+    LaunchedEffect(currentUser?.uid) {
+        if (currentUser != null) {
+            db.collection("usuarios").document(currentUser.uid).get()
+                .addOnSuccessListener { doc ->
+                    if (doc.exists()) {
+                        nombres = doc.getString("nombres") ?: ""
+                        apellidos = doc.getString("apellidos") ?: ""
+                        telefono = doc.getString("telefono") ?: ""
+                        rol = doc.getString("rol") ?: "admin"
+                    }
+                    cargando = false
+                }
+                .addOnFailureListener {
+                    cargando = false
+                    Toast.makeText(context, "Error al cargar datos", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(darkBackground)
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        if (cargando) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = goldAccent
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // --- AVATAR Y DATOS ---
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(Color(0xFF2A2415), shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = goldAccent, modifier = Modifier.size(50.dp))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = "Administrador", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text(text = adminEmail, color = Color.Gray, fontSize = 14.sp)
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // --- TARJETA DE CONFIGURACIÓN ---
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = cardBackground)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Settings, contentDescription = null, tint = goldAccent)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "Configuración de la cuenta", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                // --- AVATAR DEL ADMINISTRADOR ---
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(Color(0xFF2A2415), shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = goldAccent, modifier = Modifier.size(50.dp))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Rol: Dueño / Administrador Total", color = Color.Gray, fontSize = 14.sp)
-                Text(text = "Sucursal: Principal", color = Color.Gray, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(text = "Administrador Total", color = goldAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // --- FORMULARIO DE DATOS ---
+                // Correo (Solo Lectura)
+                OutlinedTextField(
+                    value = correo,
+                    onValueChange = {},
+                    enabled = false,
+                    label = { Text("Correo Electrónico (Solo Lectura)") },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledBorderColor = Color.DarkGray,
+                        disabledTextColor = Color.Gray,
+                        disabledLabelColor = Color.Gray,
+                        disabledLeadingIconColor = Color.DarkGray
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Nombres
+                OutlinedTextField(
+                    value = nombres,
+                    onValueChange = { nombres = it },
+                    label = { Text("Nombres") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = goldAccent, focusedLabelColor = goldAccent,
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        focusedLeadingIconColor = goldAccent
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Apellidos
+                OutlinedTextField(
+                    value = apellidos,
+                    onValueChange = { apellidos = it },
+                    label = { Text("Apellidos") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = goldAccent, focusedLabelColor = goldAccent,
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        focusedLeadingIconColor = goldAccent
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Teléfono
+                OutlinedTextField(
+                    value = telefono,
+                    onValueChange = { telefono = it },
+                    label = { Text("Número de Teléfono") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = goldAccent, focusedLabelColor = goldAccent,
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        focusedLeadingIconColor = goldAccent
+                    )
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Botón: Guardar Cambios de Perfil
+                Button(
+                    onClick = {
+                        if (nombres.isBlank() || apellidos.isBlank() || telefono.isBlank()) {
+                            Toast.makeText(context, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        if (currentUser != null) {
+                            val datosActualizados = mapOf(
+                                "nombres" to nombres,
+                                "apellidos" to apellidos,
+                                "telefono" to telefono
+                            )
+                            db.collection("usuarios").document(currentUser.uid)
+                                .update(datosActualizados)
+                                .addOnSuccessListener {
+                                    Toast.makeText(context, "Datos del Administrador actualizados", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(context, "Error al guardar cambios", Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = goldAccent, contentColor = Color.Black),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Guardar Cambios", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón: Cambiar Contraseña
+                OutlinedButton(
+                    onClick = { showPasswordDialog = true },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    border = BorderStroke(1.dp, Color.Gray),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Actualizar Contraseña", color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Botón: Cerrar Sesión
+                Button(
+                    onClick = {
+                        auth.signOut()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = errorColor, contentColor = Color.White),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cerrar Sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
+    }
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // --- BOTÓN CERRAR SESIÓN ---
-        Button(
-            onClick = {
-                auth.signOut()
-                // Asegúrate de usar la ruta correcta de tu pantalla de Login aquí
-                navController.navigate("login") { popUpTo(0) }
+    // --- DIÁLOGO DE SEGURIDAD PARA CAMBIO DE CONTRASEÑA ---
+    if (showPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!procesandoContrasena) {
+                    contrasenaActual = ""
+                    contrasenaNueva = ""
+                    actualVisible = false
+                    nuevaVisible = false
+                    showPasswordDialog = false
+                }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)), // Rojo oscuro para salida
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Cerrar Sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        }
+            containerColor = cardBackground,
+            title = { Text("Seguridad del Administrador", color = Color.White, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Para proteger los accesos a la gestión de la barbería, ingresa tu clave actual.", color = Color.Gray, fontSize = 14.sp)
 
-        Spacer(modifier = Modifier.height(20.dp))
+                    // Input Contraseña Actual
+                    OutlinedTextField(
+                        value = contrasenaActual,
+                        onValueChange = { contrasenaActual = it },
+                        label = { Text("Contraseña Actual") },
+                        visualTransformation = if (actualVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (actualVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                            IconButton(onClick = { actualVisible = !actualVisible }) {
+                                Icon(image, contentDescription = null, tint = Color.Gray)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = goldAccent, focusedLabelColor = goldAccent, focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                    )
+
+                    // Input Nueva Contraseña
+                    OutlinedTextField(
+                        value = contrasenaNueva,
+                        onValueChange = { contrasenaNueva = it },
+                        label = { Text("Nueva Contraseña") },
+                        visualTransformation = if (nuevaVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (nuevaVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                            IconButton(onClick = { nuevaVisible = !nuevaVisible }) {
+                                Icon(image, contentDescription = null, tint = Color.Gray)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = goldAccent, focusedLabelColor = goldAccent, focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    enabled = !procesandoContrasena,
+                    onClick = {
+                        // Validaciones exactas
+                        if (contrasenaActual.isBlank() || contrasenaNueva.isBlank()) {
+                            Toast.makeText(context, "Llene ambos campos", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (contrasenaNueva.length < 6) {
+                            Toast.makeText(context, "La contraseña requiere al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (contrasenaActual == contrasenaNueva) {
+                            Toast.makeText(context, "Debe ser una contraseña nueva", Toast.LENGTH_LONG).show()
+                            return@Button
+                        }
+
+                        procesandoContrasena = true
+                        val user = auth.currentUser
+
+                        if (user != null && user.email != null) {
+                            val credential = EmailAuthProvider.getCredential(user.email!!, contrasenaActual)
+
+                            user.reauthenticate(credential)
+                                .addOnSuccessListener {
+                                    user.updatePassword(contrasenaNueva)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(context, "Clave del Administrador actualizada", Toast.LENGTH_SHORT).show()
+                                            contrasenaActual = ""
+                                            contrasenaNueva = ""
+                                            actualVisible = false
+                                            nuevaVisible = false
+                                            procesandoContrasena = false
+                                            showPasswordDialog = false
+                                        }
+                                        .addOnFailureListener { e ->
+                                            procesandoContrasena = false
+                                            Toast.makeText(context, "Error de actualización: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    procesandoContrasena = false
+                                    Toast.makeText(context, "La clave actual es incorrecta", Toast.LENGTH_LONG).show()
+                                }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = goldAccent, contentColor = Color.Black)
+                ) {
+                    if (procesandoContrasena) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.Black)
+                    } else {
+                        Text("Actualizar", fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                if (!procesandoContrasena) {
+                    OutlinedButton(
+                        onClick = {
+                            contrasenaActual = ""
+                            contrasenaNueva = ""
+                            actualVisible = false
+                            nuevaVisible = false
+                            showPasswordDialog = false
+                        },
+                        border = BorderStroke(1.dp, Color.Gray)
+                    ) {
+                        Text("Cancelar", color = Color.White)
+                    }
+                }
+            }
+        )
     }
 }

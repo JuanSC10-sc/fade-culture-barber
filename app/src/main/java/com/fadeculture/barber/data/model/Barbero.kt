@@ -5,6 +5,7 @@ data class Barbero(
     val nombres: String = "",
     val especialidad: String = "",
     val correo: String = "",
+    val telefono: String = "",
     val fotoUrl: String = "",
     val estadoActivo: Boolean = true
 )

@@ -14,6 +14,9 @@ sealed class Screen(val route: String) {
         fun createRoute(citaId: String) = "client_comprobante/$citaId"
     }
     object Catalogo : Screen("client_catalogo")
+
+    // Rutas del Barbero
     object BarberHome : Screen("barber_home")
+    object BarberMain : Screen("barber_main") //
     object AdminHome : Screen("admin_home")
 }

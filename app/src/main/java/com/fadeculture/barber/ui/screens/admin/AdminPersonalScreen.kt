@@ -88,6 +88,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
     var especialidad by remember { mutableStateOf("") }
     var fotoUrl by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
@@ -113,6 +114,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
                             nombres = doc.getString("nombres") ?: "",
                             especialidad = doc.getString("especialidad") ?: "",
                             correo = doc.getString("correo") ?: "",
+                            telefono = doc.getString("telefono") ?: "",
                             fotoUrl = doc.getString("fotoUrl") ?: "",
                             estadoActivo = doc.getBoolean("estadoActivo") ?: true
                         )
@@ -128,6 +130,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
             nombres = barberoSeleccionadoEdicion!!.nombres
             especialidad = barberoSeleccionadoEdicion!!.especialidad
             email = barberoSeleccionadoEdicion!!.correo
+            telefono = barberoSeleccionadoEdicion!!.telefono
             fotoUrl = barberoSeleccionadoEdicion!!.fotoUrl
             password = ""
             confirmPassword = ""
@@ -136,6 +139,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
             especialidad = ""
             fotoUrl = ""
             email = ""
+            telefono = ""
             password = ""
             confirmPassword = ""
         }
@@ -206,6 +210,22 @@ fun AdminPersonalScreen(navController: NavHostController) {
                     AdminTextField(value = email, onValueChange = { email = it }, label = "Correo Electrónico", goldAccent = goldAccent, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    AdminTextField(
+                        value = telefono,
+                        onValueChange = {
+                            if (it.length <= 9 && it.all { c -> c.isDigit() }) {
+                                telefono = it
+                            }
+                        },
+                        label = "Teléfono",
+                        goldAccent = goldAccent,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     // Ocultamos las credenciales en modo Edición para proteger la seguridad del usuario existente
                     if (barberoSeleccionadoEdicion == null) {
                         // Campo Contraseña con Ojito
@@ -236,25 +256,70 @@ fun AdminPersonalScreen(navController: NavHostController) {
 
                     Button(
                         onClick = {
-                            // VALIDACIONES DE ENTRADA ESTRICTAS
+                            // VALIDACIONES DE ENTRADA
                             when {
-                                nombres.isBlank() || especialidad.isBlank() || email.isBlank() -> {
+                                nombres.isBlank() || especialidad.isBlank() || email.isBlank() || telefono.isBlank() -> {
                                     Toast.makeText(context, "Complete todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                                    return@Button
+
                                 }
+                                !telefono.all { it.isDigit() } -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "El teléfono solo debe contener números",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                telefono.length != 9 -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "El teléfono debe tener exactamente 9 dígitos",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                !nombres.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Nombres y Apellidos solo debe contener letras",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+                                !especialidad.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                                    Toast.makeText(
+                                        context,
+                                        "La especialidad solo debe contener letras",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+
                                 !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
                                     Toast.makeText(context, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT).show()
+                                    return@Button
                                 }
                                 barberoSeleccionadoEdicion == null && password.length < 6 -> {
                                     Toast.makeText(context, "La contraseña debe tener mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
+                                    return@Button
                                 }
                                 barberoSeleccionadoEdicion == null && password != confirmPassword -> {
                                     Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                                    return@Button
                                 }
                                 else -> {
                                     val barberoMap = hashMapOf(
                                         "nombres" to nombres,
                                         "especialidad" to especialidad,
                                         "correo" to email,
+                                        "telefono" to telefono,
                                         "fotoUrl" to fotoUrl,
                                         "estadoActivo" to if (barberoSeleccionadoEdicion != null) barberoSeleccionadoEdicion!!.estadoActivo else true
                                     )
@@ -279,7 +344,8 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                                     val userRoleMap = hashMapOf(
                                                         "nombres" to nombres,
                                                         "correo" to email,
-                                                        "rol" to "barbero" // <-- Escrito exactamente como en tu base de datos
+                                                        "telefono" to telefono,
+                                                        "rol" to "barbero" //
                                                     )
                                                     db.collection("usuarios").document(bUid).set(userRoleMap)
 
@@ -292,7 +358,19 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                             }
                                     } else {
                                         // --- ACTUALIZACIÓN DE DATOS REGULARES ---
-                                        db.collection("barberos").document(barberoSeleccionadoEdicion!!.id).set(barberoMap)
+                                        db.collection("barberos")
+                                            .document(barberoSeleccionadoEdicion!!.id)
+                                            .set(barberoMap)
+
+                                        db.collection("usuarios")
+                                            .document(barberoSeleccionadoEdicion!!.id)
+                                            .update(
+                                                mapOf(
+                                                    "nombres" to nombres,
+                                                    "correo" to email,
+                                                    "telefono" to telefono
+                                                )
+                                            )
                                             .addOnSuccessListener {
                                                 Toast.makeText(context, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
                                                 isFormOpen = false

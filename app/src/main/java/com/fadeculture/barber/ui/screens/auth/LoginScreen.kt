@@ -49,6 +49,8 @@ import com.fadeculture.barber.R
 import com.fadeculture.barber.ui.navigation.Screen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -62,6 +64,9 @@ fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var ventanaReset by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+
 
     // Paleta de colores de la Barbería
     val darkBackground = Color(0xFF121212)
@@ -146,7 +151,25 @@ fun LoginScreen(navController: NavHostController) {
             shape = RoundedCornerShape(12.dp),
             singleLine = true
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = "¿Olvidaste tu contraseña?",
+                color = goldAccent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable {
+                    resetEmail = email
+                    ventanaReset = true
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Botón de Ingreso
         Button(
@@ -154,13 +177,13 @@ fun LoginScreen(navController: NavHostController) {
                 when {
                     email.isBlank() || password.isBlank() -> {
                         Toast.makeText(context, "Complete todos los campos", Toast.LENGTH_SHORT).show()
+                        return@Button
                     }
                     !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
                         Toast.makeText(context, "Ingrese un correo válido", Toast.LENGTH_SHORT).show()
+                        return@Button
                     }
-                    password.length < 6 -> {
-                        Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
-                    }
+
                     else -> {
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
@@ -183,12 +206,13 @@ fun LoginScreen(navController: NavHostController) {
                                                     }
                                                 }
                                                 "barbero" -> {
-                                                    navController.navigate(Screen.BarberHome.route) {
+                                                    // Redirigimos al Main del Barbero
+                                                    navController.navigate(Screen.BarberMain.route) {
                                                         popUpTo(Screen.Login.route) { inclusive = true }
                                                     }
                                                 }
                                                 else -> {
-                                                    // 👈 CAMBIO AQUÍ: Redirigimos al Main del Cliente
+                                                    // Redirigimos al Main del Cliente
                                                     navController.navigate(Screen.ClientMain.route) {
                                                         popUpTo(Screen.Login.route) { inclusive = true }
                                                     }
@@ -239,5 +263,118 @@ fun LoginScreen(navController: NavHostController) {
                 }
             )
         }
+    }
+    if (ventanaReset) {
+
+        AlertDialog(
+            onDismissRequest = {
+                ventanaReset = false
+            },
+
+            title = {
+                Text("Recuperar contraseña")
+            },
+
+            text = {
+
+                Column {
+
+                    Text(
+                        text = "Ingrese el correo con el que registró su cuenta. Se enviará un enlace para restablecer su contraseña.",
+                        fontSize = 14.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = {
+                            resetEmail = it
+                        },
+                        label = {
+                            Text("Correo electrónico")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = null
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email
+                        ),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+
+            confirmButton = {
+
+                Button(
+                    onClick = {
+
+                        when {
+
+                            resetEmail.isBlank() -> {
+
+                                Toast.makeText(
+                                    context,
+                                    "Ingrese su correo",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                            !Patterns.EMAIL_ADDRESS.matcher(resetEmail).matches() -> {
+
+                                Toast.makeText(
+                                    context,
+                                    "Ingrese un correo válido",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                            else -> {
+
+                                auth.sendPasswordResetEmail(resetEmail)
+                                    .addOnSuccessListener {
+
+                                        Toast.makeText(
+                                            context,
+                                            "Se envió un enlace de recuperación a su correo.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        ventanaReset = false
+                                    }
+
+                                    .addOnFailureListener {
+
+                                        Toast.makeText(
+                                            context,
+                                            "No fue posible enviar el correo de recuperación.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                            }
+                        }
+                    }
+                ) {
+
+                    Text("Enviar")
+                }
+            },
+
+            dismissButton = {
+
+                OutlinedButton(
+                    onClick = {
+                        ventanaReset = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

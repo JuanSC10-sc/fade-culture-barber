@@ -1,4 +1,4 @@
-package com.fadeculture.barber.ui.screens.client
+package com.fadeculture.barber.ui.screens.barber
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -33,51 +33,49 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ClientPerfilScreen(navController: NavHostController) {
+fun BarberPerfilScreen(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
     val scrollState = rememberScrollState()
 
-    // Colores de la marca
+    // Colores corporativos
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
     val errorColor = Color(0xFFEF5350)
 
-    // Estados para los datos del Perfil
+    // Estados de Datos
     var nombres by remember { mutableStateOf("") }
-    var apellidos by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf(currentUser?.email ?: "") }
     var cargando by remember { mutableStateOf(true) }
 
-    // Estados para el Diálogo de Cambio de Contraseña
+    // Estados para Diálogo de Contraseña
     var showPasswordDialog by remember { mutableStateOf(false) }
     var contrasenaActual by remember { mutableStateOf("") }
     var contrasenaNueva by remember { mutableStateOf("") }
     var procesandoContrasena by remember { mutableStateOf(false) }
 
-    // Estados para los "ojitos" de visibilidad
+    // Estados para visibilidad ("Ojito")
     var actualVisible by remember { mutableStateOf(false) }
     var nuevaVisible by remember { mutableStateOf(false) }
 
-    // 1. Cargar Datos del Cliente desde Firestore al iniciar
+    // 1. Cargar Datos del Especialista desde Firestore
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null) {
             db.collection("usuarios").document(currentUser.uid).get()
                 .addOnSuccessListener { doc ->
                     if (doc.exists()) {
                         nombres = doc.getString("nombres") ?: ""
-                        apellidos = doc.getString("apellidos") ?: ""
                         telefono = doc.getString("telefono") ?: ""
                     }
                     cargando = false
                 }
                 .addOnFailureListener {
                     cargando = false
-                    Toast.makeText(context, "Error al cargar datos", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error de red al cargar perfil", Toast.LENGTH_SHORT).show()
                 }
         }
     }
@@ -99,17 +97,17 @@ fun ClientPerfilScreen(navController: NavHostController) {
                     .padding(24.dp)
                     .verticalScroll(scrollState)
             ) {
-                // Cabecera básica
-                Text("Mi Perfil", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text("Gestiona los datos de tu cuenta de acceso", fontSize = 14.sp, color = Color.Gray)
+                // Cabecera
+                Text("Perfil Profesional", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Actualiza tus datos de contacto y acceso", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo: Correo Electrónico (Deshabilitado, solo lectura por seguridad)
+                // Campo Correo (Deshabilitado por seguridad)
                 OutlinedTextField(
                     value = correo,
                     onValueChange = {},
                     enabled = false,
-                    label = { Text("Correo Electrónico") },
+                    label = { Text("Correo Electrónico (Solo Lectura)") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -121,11 +119,11 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo: Nombres
+                // Campo Nombres
                 OutlinedTextField(
                     value = nombres,
                     onValueChange = { nombres = it },
-                    label = { Text("Nombres") },
+                    label = { Text("Nombres y Apellidos") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -137,23 +135,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo: Apellidos
-                OutlinedTextField(
-                    value = apellidos,
-                    onValueChange = { apellidos = it },
-                    label = { Text("Apellidos") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = goldAccent, focusedLabelColor = goldAccent,
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        focusedLeadingIconColor = goldAccent
-                    )
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Campo: Teléfono
+                // Campo Teléfono
                 OutlinedTextField(
                     value = telefono,
                     onValueChange = { telefono = it },
@@ -169,41 +151,39 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón: Guardar Cambios de Perfil
+                // Botón: Guardar Cambios
                 Button(
                     onClick = {
-                        when {
-                            nombres.isBlank() || apellidos.isBlank() || telefono.isBlank() -> {
-                                Toast.makeText(context, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            !nombres.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
-                                Toast.makeText(context, "Los nombres solo deben contener letras", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            !apellidos.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
-                                Toast.makeText(context, "Los apellidos solo deben contener letras", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            !telefono.matches(Regex("^\\d{9}$")) -> {
-                                Toast.makeText(context, "El teléfono debe contener exactamente 9 dígitos", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
+                        if (nombres.isBlank() || telefono.isBlank()) {
+                            Toast.makeText(context, "Complete todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                            return@Button
                         }
 
                         if (currentUser != null) {
                             val datosActualizados = mapOf(
                                 "nombres" to nombres,
-                                "apellidos" to apellidos,
                                 "telefono" to telefono
                             )
-                            db.collection("usuarios").document(currentUser.uid)
+                            // Actualizar colección "usuarios"
+                            db.collection("usuarios")
+                                .document(currentUser.uid)
                                 .update(datosActualizados)
                                 .addOnSuccessListener {
-                                    Toast.makeText(context, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
+
+                                    // Sincronizar actualización con colección "barberos"
+                                    db.collection("barberos")
+                                        .document(currentUser.uid)
+                                        .update(datosActualizados)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(context, "Información actualizada correctamente", Toast.LENGTH_SHORT).show()
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(context, "Se actualizó 'usuarios', pero falló 'barberos'", Toast.LENGTH_SHORT).show()
+                                        }
+
                                 }
                                 .addOnFailureListener {
-                                    Toast.makeText(context, "Error al guardar cambios", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Fallo al guardar cambios", Toast.LENGTH_SHORT).show()
                                 }
                         }
                     },
@@ -216,7 +196,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Botón Secundario: Abrir Cambio de Contraseña
+                // Botón: Cambiar Contraseña
                 OutlinedButton(
                     onClick = { showPasswordDialog = true },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -225,15 +205,16 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 ) {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cambiar Contraseña", color = Color.White)
+                    Text("Actualizar Contraseña", color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón Terciario: Cerrar Sesión
+                // Botón: Cerrar Sesión
                 OutlinedButton(
                     onClick = {
                         auth.signOut()
+                        // 100% Seguro: Redirige y limpia la pila para no poder volver
                         navController.navigate("login") {
                             popUpTo(0) { inclusive = true }
                         }
@@ -252,7 +233,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
         }
     }
 
-    // --- DIÁLOGO FLOTANTE DE CAMBIO DE CONTRASEÑA ---
+    // --- DIÁLOGO DE SEGURIDAD PARA CONTRASEÑA ---
     if (showPasswordDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -265,12 +246,12 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 }
             },
             containerColor = cardBackground,
-            title = { Text("Actualizar Contraseña", color = Color.White, fontWeight = FontWeight.Bold) },
+            title = { Text("Seguridad de Cuenta", color = Color.White, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Por seguridad, ingresa tus credenciales actuales para realizar el cambio.", color = Color.Gray, fontSize = 14.sp)
+                    Text("Ingresa tus credenciales actuales para verificar tu identidad.", color = Color.Gray, fontSize = 14.sp)
 
-                    // Campo de Contraseña Actual con Ojito
+                    // Input Contraseña Actual
                     OutlinedTextField(
                         value = contrasenaActual,
                         onValueChange = { contrasenaActual = it },
@@ -279,14 +260,14 @@ fun ClientPerfilScreen(navController: NavHostController) {
                         trailingIcon = {
                             val image = if (actualVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                             IconButton(onClick = { actualVisible = !actualVisible }) {
-                                Icon(image, contentDescription = "Mostrar contraseña", tint = Color.Gray)
+                                Icon(image, contentDescription = null, tint = Color.Gray)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = goldAccent, focusedLabelColor = goldAccent, focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                     )
 
-                    // Campo de Nueva Contraseña con Ojito
+                    // Input Nueva Contraseña
                     OutlinedTextField(
                         value = contrasenaNueva,
                         onValueChange = { contrasenaNueva = it },
@@ -295,7 +276,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
                         trailingIcon = {
                             val image = if (nuevaVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                             IconButton(onClick = { nuevaVisible = !nuevaVisible }) {
-                                Icon(image, contentDescription = "Mostrar contraseña", tint = Color.Gray)
+                                Icon(image, contentDescription = null, tint = Color.Gray)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -307,16 +288,17 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 Button(
                     enabled = !procesandoContrasena,
                     onClick = {
+                        // Validaciones Lógicas
                         if (contrasenaActual.isBlank() || contrasenaNueva.isBlank()) {
-                            Toast.makeText(context, "Complete ambos campos", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Llene todos los campos", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         if (contrasenaNueva.length < 6) {
-                            Toast.makeText(context, "La nueva contraseña debe tener mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Mínimo 6 caracteres requeridos", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         if (contrasenaActual == contrasenaNueva) {
-                            Toast.makeText(context, "La nueva contraseña debe ser diferente a la actual", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "La nueva clave debe ser distinta a la actual", Toast.LENGTH_LONG).show()
                             return@Button
                         }
 
@@ -326,11 +308,12 @@ fun ClientPerfilScreen(navController: NavHostController) {
                         if (user != null && user.email != null) {
                             val credential = EmailAuthProvider.getCredential(user.email!!, contrasenaActual)
 
+                            // Reautenticación en Firebase
                             user.reauthenticate(credential)
                                 .addOnSuccessListener {
                                     user.updatePassword(contrasenaNueva)
                                         .addOnSuccessListener {
-                                            Toast.makeText(context, "Contraseña cambiada con éxito", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Contraseña modificada con éxito", Toast.LENGTH_SHORT).show()
                                             contrasenaActual = ""
                                             contrasenaNueva = ""
                                             actualVisible = false
@@ -340,22 +323,19 @@ fun ClientPerfilScreen(navController: NavHostController) {
                                         }
                                         .addOnFailureListener { e ->
                                             procesandoContrasena = false
-                                            Toast.makeText(context, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Error en Firebase: ${e.message}", Toast.LENGTH_SHORT).show()
                                         }
                                 }
                                 .addOnFailureListener {
                                     procesandoContrasena = false
-                                    Toast.makeText(context, "La contraseña actual es incorrecta", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "La contraseña actual no es válida", Toast.LENGTH_LONG).show()
                                 }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = goldAccent, contentColor = Color.Black)
                 ) {
                     if (procesandoContrasena) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.Black
-                        )
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.Black)
                     } else {
                         Text("Actualizar", fontWeight = FontWeight.Bold)
                     }

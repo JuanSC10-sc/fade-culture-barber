@@ -167,20 +167,73 @@ fun RegisterScreen(navController: NavHostController) {
         Button(
             onClick = {
                 when {
-                    nombres.isBlank() || apellidos.isBlank() || telefono.isBlank() || correo.isBlank() || contrasena.isBlank() -> {
-                        Toast.makeText(context, "Complete todos los campos", Toast.LENGTH_SHORT).show()
+                    nombres.isBlank() ||
+                            apellidos.isBlank() ||
+                            telefono.isBlank() ||
+                            correo.isBlank() ||
+                            contrasena.isBlank() ||
+                            confirmarContrasena.isBlank() -> {
+
+                        Toast.makeText(
+                            context,
+                            "Complete todos los campos",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
                     }
+
+                    !nombres.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                        Toast.makeText(
+                            context,
+                            "Los nombres solo deben contener letras",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
+
+                    !apellidos.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                        Toast.makeText(
+                            context,
+                            "Los apellidos solo deben contener letras",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
+
                     !Patterns.EMAIL_ADDRESS.matcher(correo).matches() -> {
-                        Toast.makeText(context, "Ingrese un correo válido", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Ingrese un correo válido",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
                     }
-                    telefono.length < 9 -> {
-                        Toast.makeText(context, "Ingrese un número de teléfono válido", Toast.LENGTH_SHORT).show()
+
+                    !telefono.matches(Regex("^\\d{9}$")) -> {
+                        Toast.makeText(
+                            context,
+                            "El teléfono debe contener exactamente 9 dígitos",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
                     }
+
                     contrasena.length < 6 -> {
-                        Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "La contraseña debe tener al menos 6 caracteres",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
                     }
+
                     contrasena != confirmarContrasena -> {
-                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Las contraseñas no coinciden",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
                     }
                     else -> {
                         val auth = FirebaseAuth.getInstance()

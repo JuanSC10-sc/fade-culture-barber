@@ -255,9 +255,60 @@ fun AdminServiciosScreen(navController: NavHostController) {
                             val precioDouble = precio.toDoubleOrNull()
                             val duracionInt = duracion.toIntOrNull()
 
-                            if (titulo.isBlank() || precioDouble == null || duracionInt == null) {
-                                Toast.makeText(context, "Verifique los campos y valores numéricos", Toast.LENGTH_SHORT).show()
-                                return@Button
+                            when {
+
+                                titulo.isBlank() ||
+                                        descripcion.isBlank() ||
+                                        precio.isBlank() ||
+                                        duracion.isBlank() -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Complete todos los campos obligatorios",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                !titulo.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "El título solo debe contener letras",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                !descripcion.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ,.]+$")) -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "La descripción solo debe contener letras",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                !precio.matches(Regex("^\\d+(\\.\\d{1,2})?$")) -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Ingrese un precio válido (Ej: 25.00)",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+
+                                !duracion.matches(Regex("^\\d+$")) -> {
+
+                                    Toast.makeText(
+                                        context,
+                                        "La duración solo debe contener números",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
                             }
 
                             val servicioMap = hashMapOf(
@@ -266,7 +317,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                                 "precioSoles" to precioDouble,
                                 "duracionMinutos" to duracionInt,
                                 "imagenUrl" to imagenUrl,
-                                "categoria" to categoria, // 👈 SE GUARDA LA CATEGORÍA EN FIRESTORE
+                                "categoria" to categoria,
                                 "estadoActivo" to if (servicioSeleccionadoEdicion != null) servicioSeleccionadoEdicion!!.estadoActivo else true
                             )
 
