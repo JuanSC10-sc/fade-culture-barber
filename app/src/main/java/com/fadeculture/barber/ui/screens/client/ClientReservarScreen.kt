@@ -46,8 +46,6 @@ fun ClientReservarScreen(navController: NavHostController) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
     val scrollState = rememberScrollState()
-
-    // 👇 Instancia para ejecutar tareas asíncronas (como el envío del correo) sin congelar la app
     val coroutineScope = rememberCoroutineScope()
 
     val darkBackground = Color(0xFF121212)
@@ -110,7 +108,6 @@ fun ClientReservarScreen(navController: NavHostController) {
 
                             val todosLosTiemposOcupados = ocupadosPorCitas + ocupadosPorBloqueos
 
-                            // LÓGICA ESTRICTA (Sin Salvavidas)
                             db.collection("barberos").document(barberoId).collection("horarios_diarios").document(fechaDB).get()
                                 .addOnSuccessListener { doc ->
                                     val horasValidas = mutableListOf<String>()
@@ -118,10 +115,23 @@ fun ClientReservarScreen(navController: NavHostController) {
                                         val tMActivo = doc.getBoolean("turnoMananaActivo") ?: false
                                         val tTActivo = doc.getBoolean("turnoTardeActivo") ?: false
 
+                                        // CORRECCIÓN APLICADA AQUÍ 👇
                                         if (tMActivo) horasValidas.addAll(generarBloquesLibres(doc.getString("tMInicio") ?: "08:00", doc.getString("tMFin") ?: "12:00", duracionServicio, todosLosTiemposOcupados))
                                         if (tTActivo) horasValidas.addAll(generarBloquesLibres(doc.getString("tTInicio") ?: "14:00", doc.getString("tTFin") ?: "19:00", duracionServicio, todosLosTiemposOcupados))
                                     }
-                                    horasDisponiblesVisuales = horasValidas
+
+                                    // CAPA 2 DE SEGURIDAD: Filtrar horas pasadas si la fecha seleccionada es HOY
+                                    val hoyCalendar = Calendar.getInstance()
+                                    val hoyDB = String.format("%04d-%02d-%02d", hoyCalendar.get(Calendar.YEAR), hoyCalendar.get(Calendar.MONTH) + 1, hoyCalendar.get(Calendar.DAY_OF_MONTH))
+
+                                    val horasFinales = if (fechaDB == hoyDB) {
+                                        val horaActualMinutos = hoyCalendar.get(Calendar.HOUR_OF_DAY) * 60 + hoyCalendar.get(Calendar.MINUTE)
+                                        horasValidas.filter { timeToMinutes(it) > horaActualMinutos }
+                                    } else {
+                                        horasValidas
+                                    }
+
+                                    horasDisponiblesVisuales = horasFinales
                                     horaSeleccionada = ""
                                 }
                         }
@@ -131,7 +141,6 @@ fun ClientReservarScreen(navController: NavHostController) {
 
     val serviciosFiltrados = servicios.filter { it.categoria == categoriaSeleccionada }
 
-    // --- FORMULARIO PRINCIPAL DE RESERVA ---
     Column(
         modifier = Modifier.fillMaxSize().background(darkBackground).padding(24.dp).verticalScroll(scrollState)
     ) {
@@ -207,10 +216,14 @@ fun ClientReservarScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(
             onClick = {
-                DatePickerDialog(context, { _, y, m, d ->
+                val dialog = DatePickerDialog(context, { _, y, m, d ->
                     fechaDB = String.format("%04d-%02d-%02d", y, m + 1, d)
                     fechaVisual = String.format("%02d/%02d/%04d", d, m + 1, y)
-                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+
+                // CAPA 1 DE SEGURIDAD: Bloquear físicamente la selección de días del pasado
+                dialog.datePicker.minDate = System.currentTimeMillis() - 1000
+                dialog.show()
             },
             modifier = Modifier.fillMaxWidth().height(50.dp),
             border = BorderStroke(1.dp, if (fechaVisual.isNotBlank()) goldAccent else Color.Gray),
@@ -292,13 +305,7 @@ fun ClientReservarScreen(navController: NavHostController) {
 
                                 db.collection("citas").add(nuevaCita)
                                     .addOnSuccessListener { documentReference ->
-
-                                        // 👇 RECUPERAMOS EL CORREO DEL USUARIO AUTENTICADO
                                         val correoCliente = auth.currentUser?.email ?: ""
-
-                                        android.util.Log.d("DEBUG_EMAIL", "Email detectado: '$correoCliente'")
-
-                                        // 👇 DISPARAMOS EL CORREO EN SEGUNDO PLANO
                                         if (correoCliente.isNotBlank()) {
                                             coroutineScope.launch {
                                                 EmailService.enviarComprobante(
@@ -312,8 +319,6 @@ fun ClientReservarScreen(navController: NavHostController) {
                                                 )
                                             }
                                         }
-
-                                        // 👇 NAVEGAMOS AL COMPROBANTE SIN INTERRUMPIR EL FLUJO
                                         navController.navigate(Screen.Comprobante.createRoute(documentReference.id))
                                     }
                                     .addOnFailureListener {

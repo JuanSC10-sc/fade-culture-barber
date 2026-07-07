@@ -38,13 +38,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.fadeculture.barber.data.model.Cita
 import com.fadeculture.barber.ui.navigation.Screen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun ClientHomeScreen(navController: NavHostController,
-                     onNavigateTab: (String) -> Unit) {
+fun ClientHomeScreen(
+    navController: NavHostController,
+    onNavigateTab: (String) -> Unit
+) {
     // Paleta de colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
@@ -53,8 +56,10 @@ fun ClientHomeScreen(navController: NavHostController,
 
     val scrollState = rememberScrollState()
 
-    // VARIABLE DE ESTADO PARA EL NOMBRE
+    // VARIABLES DE ESTADO
     var nombreCliente by remember { mutableStateOf("...") }
+    var proximaCita by remember { mutableStateOf<Cita?>(null) }
+    var cargandoCita by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         val auth = FirebaseAuth.getInstance()
@@ -62,21 +67,49 @@ fun ClientHomeScreen(navController: NavHostController,
         val userId = auth.currentUser?.uid
 
         if (userId != null) {
-            // Buscamos en la colección
+            // 1. Buscamos el nombre del usuario
             db.collection("usuarios").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
-                        // Extraemos el campo
-                        val nombreCompleto = document.getString("nombres") ?: "Cliente"
-
-                        nombreCliente = nombreCompleto
+                        nombreCliente = document.getString("nombres") ?: "Cliente"
                     } else {
                         nombreCliente = "Cliente"
                     }
                 }
                 .addOnFailureListener {
-                    // Si falla la conexión
                     nombreCliente = "Cliente"
+                }
+
+            // 2. Buscamos la cita pendiente más cercana de forma dinámica
+            db.collection("citas")
+                .whereEqualTo("clienteId", userId)
+                .whereEqualTo("estado", "pendiente")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot != null && !snapshot.isEmpty) {
+                        val listaCitas = snapshot.documents.map { doc ->
+                            Cita(
+                                id = doc.id,
+                                servicioTitulo = doc.getString("servicioTitulo") ?: "",
+                                barberoNombre = doc.getString("barberoNombre") ?: "",
+                                fecha = doc.getString("fecha") ?: "",
+                                hora = doc.getString("hora") ?: "",
+                                precio = doc.getDouble("precio") ?: 0.0,
+                                estado = "pendiente"
+                            )
+                        }
+
+                        // Ordenamos cronológicamente combinando "fecha T hora" (Ej: "2026-07-08 T 15:30")
+                        // y tomamos el valor mínimo, que corresponde a la cita más cercana en el futuro.
+                        proximaCita = listaCitas.minByOrNull { "${it.fecha}T${it.hora}" }
+                    } else {
+                        proximaCita = null
+                    }
+                    cargandoCita = false
+                }
+                .addOnFailureListener {
+                    proximaCita = null
+                    cargandoCita = false
                 }
         }
     }
@@ -137,7 +170,7 @@ fun ClientHomeScreen(navController: NavHostController,
             icon = Icons.Default.LibraryBooks,
             cardBackground = cardBackground,
             goldAccent = goldAccent,
-            onClick = { /* TODO: Navegar al historial */ }
+            onClick = { onNavigateTab("client_mis_citas") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -153,9 +186,17 @@ fun ClientHomeScreen(navController: NavHostController,
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // TARJETA DE PRÓXIMA CITA DESTACADA
+        // TARJETA DE PRÓXIMA CITA DESTACADA (DINÁMICA Y CLIQUEABLE)
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (proximaCita != null) {
+                        onNavigateTab("client_mis_citas")
+                    } else {
+                        onNavigateTab("client_reservar")
+                    }
+                },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = highlightBackground)
         ) {
@@ -170,18 +211,48 @@ fun ClientHomeScreen(navController: NavHostController,
                     fontSize = 15.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Lun 02 Jun - 11:00 AM", // Próximamente
-                    color = goldAccent,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Barbero: Juan Pérez - Corte + barba",
-                    color = Color.White,
-                    fontSize = 15.sp
-                )
+
+                if (cargandoCita) {
+                    Text(
+                        text = "Verificando agenda...",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                } else if (proximaCita != null) {
+                    val cita = proximaCita!!
+
+                    // Convertimos el formato YYYY-MM-DD a DD/MM/YYYY para que se vea ordenado en el Home
+                    val partesFecha = cita.fecha.split("-")
+                    val fechaFormateada = if (partesFecha.size == 3) "${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}" else cita.fecha
+
+                    Text(
+                        text = "$fechaFormateada - ${cita.hora} hrs",
+                        color = goldAccent,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Especialista: ${cita.barberoNombre}\nServicio: ${cita.servicioTitulo}",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        lineHeight = 20.sp
+                    )
+                } else {
+                    // Estado Alternativo por si el cliente no tiene ninguna reserva activa
+                    Text(
+                        text = "No tienes citas programadas",
+                        color = Color.Gray,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "¡Toca aquí para agendar tu espacio!",
+                        color = goldAccent,
+                        fontSize = 13.sp
+                    )
+                }
             }
         }
 
