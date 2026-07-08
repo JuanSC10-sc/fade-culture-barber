@@ -154,9 +154,20 @@ fun BarberPerfilScreen(navController: NavHostController) {
                 // Botón: Guardar Cambios
                 Button(
                     onClick = {
-                        if (nombres.isBlank() || telefono.isBlank()) {
-                            Toast.makeText(context, "Complete todos los campos obligatorios", Toast.LENGTH_SHORT).show()
-                            return@Button
+                        when {
+                            nombres.isBlank() || telefono.isBlank() -> {
+                                Toast.makeText(context, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            !nombres.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                                Toast.makeText(context, "Los nombres y apellidos solo deben contener letras", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            !telefono.matches(Regex("^\\d{9}$")) -> {
+                                Toast.makeText(context, "El teléfono debe contener exactamente 9 dígitos", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
                         }
 
                         if (currentUser != null) {
