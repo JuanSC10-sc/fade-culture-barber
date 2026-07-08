@@ -181,9 +181,34 @@ fun AdminPerfilScreen(navController: NavHostController) {
                 // Botón: Guardar Cambios de Perfil
                 Button(
                     onClick = {
-                        if (nombres.isBlank() || apellidos.isBlank() || telefono.isBlank()) {
-                            Toast.makeText(context, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
-                            return@Button
+                        when {
+                            nombres.isBlank() || apellidos.isBlank() || telefono.isBlank() -> {
+                                Toast.makeText(context, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            !nombres.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                                Toast.makeText(context, "Nombres solo deben contener letras", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            !apellidos.matches(Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")) -> {
+                                Toast.makeText(context, "Apellidos solo deben contener letras", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            !telefono.all { it.isDigit() } -> {
+
+                                Toast.makeText(
+                                    context,
+                                    "El teléfono solo debe contener números",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
+
+                            !telefono.matches(Regex("^\\d{9}$")) -> {
+                                Toast.makeText(context, "El teléfono debe contener exactamente 9 dígitos", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
                         }
 
                         if (currentUser != null) {

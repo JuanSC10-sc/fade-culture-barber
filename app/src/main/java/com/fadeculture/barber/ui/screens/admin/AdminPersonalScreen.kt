@@ -273,6 +273,11 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                     return@Button
                                 }
 
+                                !telefono.matches(Regex("^\\d{9}$")) -> {
+                                    Toast.makeText(context, "El teléfono debe contener exactamente 9 dígitos", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+
                                 telefono.length != 9 -> {
 
                                     Toast.makeText(

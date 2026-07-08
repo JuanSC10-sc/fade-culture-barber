@@ -168,6 +168,15 @@ fun BarberPerfilScreen(navController: NavHostController) {
                                 Toast.makeText(context, "El teléfono debe contener exactamente 9 dígitos", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
+                            !telefono.all { it.isDigit() } -> {
+
+                                Toast.makeText(
+                                    context,
+                                    "El teléfono solo debe contener números",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
                         }
 
                         if (currentUser != null) {
