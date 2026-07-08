@@ -35,7 +35,7 @@ fun ClientMisCitasScreen() {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
 
-    // Colores de la marca
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -55,7 +55,7 @@ fun ClientMisCitasScreen() {
     var fechaFiltroVisual by remember { mutableStateOf("") } // DD/MM/YYYY
     val calendar = Calendar.getInstance()
 
-    // 1. Escuchar citas del cliente en TIEMPO REAL
+    // Escuchar citas del cliente en TIEMPO REAL
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null) {
             db.collection("citas")
@@ -80,7 +80,7 @@ fun ClientMisCitasScreen() {
         }
     }
 
-    // 2. Lógica de Filtrado
+    // Lógica de Filtrado
     val citasFiltradas = todasLasCitas.filter { cita ->
         val coincideTab = if (selectedTab == 0) {
             cita.estado == "pendiente"
@@ -286,7 +286,7 @@ fun ItemCitaCard(cita: Cita, onCancelarClick: (Cita) -> Unit) {
                 Text(text = "$fechaFormateada - ${cita.hora} hrs", color = Color.Gray, fontSize = 14.sp)
             }
 
-            // 👇 Botón Condicional: Solo aparece si el estado es pendiente
+            // Solo aparece si el estado es pendiente
             if (cita.estado == "pendiente") {
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(

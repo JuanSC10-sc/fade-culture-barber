@@ -107,7 +107,7 @@ fun ClientComprobanteScreen(navController: NavHostController, citaId: String) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 👇 Mensaje solicitado sobre el correo
+            //Mensaje solicitado sobre el correo
             Text(
                 text = "Se ha enviado una copia de este comprobante al correo electrónico registrado.",
                 color = Color.LightGray,

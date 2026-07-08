@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
-// 1. Definimos las rutas de la barra del barbero
+// efinimos las rutas de la barra del barbero
 sealed class BarberNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Home : BarberNavItem("barber_home", "Inicio", Icons.Default.Home)
     object Agenda : BarberNavItem("barber_agenda", "Agenda", Icons.Default.EventNote)
@@ -25,7 +25,7 @@ sealed class BarberNavItem(val route: String, val title: String, val icon: Image
     object Perfil : BarberNavItem("barber_perfil", "Perfil", Icons.Default.Person)
 }
 
-// 2. Componente Visual de la Barra Inferior
+// Componente Visual de la Barra Inferior
 @Composable
 fun BarberBottomBar(internalNavController: NavHostController) {
     val cardBackground = Color(0xFF1E1E1E)

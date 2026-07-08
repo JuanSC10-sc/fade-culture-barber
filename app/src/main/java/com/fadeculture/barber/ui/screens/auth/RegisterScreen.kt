@@ -261,7 +261,7 @@ fun RegisterScreen(navController: NavHostController) {
                                             .addOnSuccessListener {
                                                 Toast.makeText(context, "¡Registro Exitoso!", Toast.LENGTH_SHORT).show()
 
-                                                // 👈 Redirigimos al Contenedor Principal (ClientMain) y limpiamos el BackStack
+                                                //Redirigimos al Contenedor Principal (ClientMain) y limpiamos el BackStack
                                                 navController.navigate(Screen.ClientMain.route) {
                                                     popUpTo(Screen.Login.route) { inclusive = true }
                                                 }

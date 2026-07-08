@@ -11,7 +11,6 @@ import org.json.JSONObject
 
 object EmailService {
 
-    // --- REEMPLAZA ESTOS 3 VALORES CON LOS DE TU CUENTA EMAILJS ---
     private const val SERVICE_ID = "service_lm0afjy"
     private const val TEMPLATE_ID = "template_tqfjswa"
     private const val PUBLIC_KEY = "ZymITF7Ou7cHTvybf"
@@ -19,7 +18,7 @@ object EmailService {
     private const val URL_EMAIL_JS = "https://api.emailjs.com/api/v1.0/email/send"
     private val client = OkHttpClient()
 
-    // Usamos corrutinas para no congelar la pantalla mientras se envía el correo
+    //corrutinas
     suspend fun enviarComprobante(
         correoDestino: String,
         nombreCliente: String,
@@ -30,7 +29,7 @@ object EmailService {
         precio: String
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            // 1. Armamos los parámetros dinámicos que pide tu Template
+            // parámetros dinámicos
             val templateParams = JSONObject().apply {
                 put("correo_destino", correoDestino)
                 put("nombre_cliente", nombreCliente)
@@ -41,7 +40,7 @@ object EmailService {
                 put("precio", precio)
             }
 
-            // 2. Armamos la estructura principal que exige la API de EmailJS
+            // estructura principal API de EmailJS
             val requestPayload = JSONObject().apply {
                 put("service_id", SERVICE_ID)
                 put("template_id", TEMPLATE_ID)
@@ -49,7 +48,7 @@ object EmailService {
                 put("template_params", templateParams)
             }
 
-            // 3. Preparamos la petición HTTP POST
+            // petición HTTP POST
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = requestPayload.toString().toRequestBody(mediaType)
 
@@ -58,7 +57,7 @@ object EmailService {
                 .post(requestBody)
                 .build()
 
-            // 4. Ejecutamos la petición
+            // Ejecutar la petición
             val response = client.newCall(request).execute()
             val isSuccess = response.isSuccessful
 

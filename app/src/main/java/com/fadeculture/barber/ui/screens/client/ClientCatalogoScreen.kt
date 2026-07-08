@@ -60,7 +60,7 @@ fun CatalogoScreen() {
     var listaServicios by remember { mutableStateOf<List<Servicio>>(emptyList()) }
     var listaBarberos by remember { mutableStateOf<List<Barbero>>(emptyList()) }
 
-    // Chips sincronizados exactamente con las opciones del Admin
+    // Chips sincronizados
     var categoriaSeleccionada by remember { mutableStateOf("Todos") }
     val categorias = listOf("Todos", "Corte", "Barba", "Tinte", "Ondulación", "Servicios Completos")
 
@@ -77,7 +77,7 @@ fun CatalogoScreen() {
                             precioSoles = doc.getDouble("precioSoles") ?: 0.0,
                             duracionMinutos = doc.getLong("duracionMinutos")?.toInt() ?: 0,
                             imagenUrl = doc.getString("imagenUrl") ?: "",
-                            categoria = doc.getString("categoria") ?: "Corte", // 👈 RECUPERAMOS LA CATEGORÍA
+                            categoria = doc.getString("categoria") ?: "Corte",
                             estadoActivo = true
                         )
                     }
@@ -101,7 +101,7 @@ fun CatalogoScreen() {
             }
     }
 
-    // --- FILTRADO DIRECTO Y LIMPIO (Clean Architecture) ---
+    // FILTRADO DIRECTO Y LIMPIO (Clean Architecture) ---
     val serviciosFiltrados = if (categoriaSeleccionada == "Todos") {
         listaServicios
     } else {
@@ -131,7 +131,7 @@ fun CatalogoScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- RENDERIZADO DE CHIPS ---
+        // RENDERIZADO DE CHIPS ---
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
@@ -159,7 +159,7 @@ fun CatalogoScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- RENDERIZADO EN CUADRÍCULA DE 2 COLUMNAS ---
+        // RENDERIZADO EN CUADRÍCULA DE 2 COLUMNAS
         if (serviciosFiltrados.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(150.dp),

@@ -64,7 +64,7 @@ fun SplashScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(45.dp))
 
-            // 2. Animación nativa de carga
+            // Animación nativa de carga
             CircularProgressIndicator(
                 color = Color(0xFFD4AF37),
                 strokeWidth = 3.dp,
@@ -73,7 +73,7 @@ fun SplashScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. Texto informativo
+            // Texto informativo
             Text(
                 text = "Cargando servicios...",
                 color = Color.LightGray,

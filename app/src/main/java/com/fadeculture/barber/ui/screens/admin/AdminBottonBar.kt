@@ -31,7 +31,7 @@ fun AdminBottomNavigationBar(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
-    // Definimos las 4 opciones del menú
+    // 4 opciones del menú
     val items = listOf(
         BottomNavItem("Inicio", Icons.Default.Home, "admin_home"),
         BottomNavItem("Turnos Hoy", Icons.Default.Today, "admin_hoy"),
@@ -54,7 +54,7 @@ fun AdminBottomNavigationBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (selected) cardBackground else Color.Gray // Si está seleccionado, el ícono se vuelve oscuro porque el fondo será dorado
+                        tint = if (selected) cardBackground else Color.Gray // Si está seleccionado, el ícono se vuelve oscuro
                     )
                 },
                 label = {
@@ -66,7 +66,7 @@ fun AdminBottomNavigationBar(
                 selected = selected,
                 onClick = { onNavigate(item.route) },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = goldAccent // La burbuja que resalta la opción seleccionada
+                    indicatorColor = goldAccent // resalta la opción seleccionada
                 )
             )
         }

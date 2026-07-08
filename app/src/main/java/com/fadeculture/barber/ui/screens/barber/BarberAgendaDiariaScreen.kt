@@ -55,7 +55,7 @@ fun BarberAgendaScreen(navController: NavHostController) {
     val auth = FirebaseAuth.getInstance()
     val userId = auth.currentUser?.uid
 
-    // Paleta de colores original de la plantilla
+    // Paleta de colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -76,7 +76,7 @@ fun BarberAgendaScreen(navController: NavHostController) {
 
     LaunchedEffect(userId) {
         if (userId != null) {
-            // 1. Obtener nombre del barbero
+            // Obtener nombre del barbero
             db.collection("usuarios").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
@@ -84,7 +84,7 @@ fun BarberAgendaScreen(navController: NavHostController) {
                     }
                 }
 
-            // 2. Escuchar en tiempo real las citas de HOY para este barbero
+            // Escuchar en tiempo real las citas de HOY para este barbero
             db.collection("citas")
                 .whereEqualTo("barberoId", userId)
                 .whereEqualTo("fecha", hoyDB)
@@ -197,7 +197,7 @@ fun BarberAgendaScreen(navController: NavHostController) {
     }
 }
 
-// Componente adaptado a datos reales y máquina de estados
+// Componente
 @Composable
 fun AgendaCitaItem(
     cita: Cita,
@@ -209,7 +209,7 @@ fun AgendaCitaItem(
     // Definimos bordes y fondos dependiendo del estado de la cita
     val borderColor = when (cita.estado) {
         "pendiente" -> goldAccent.copy(alpha = 0.5f)
-        "en_proceso" -> Color(0xFF4CAF50).copy(alpha = 0.5f) // Verde brillante
+        "en_proceso" -> Color(0xFF4CAF50).copy(alpha = 0.5f)
         "finalizada" -> Color.DarkGray
         else -> Color.DarkGray
     }

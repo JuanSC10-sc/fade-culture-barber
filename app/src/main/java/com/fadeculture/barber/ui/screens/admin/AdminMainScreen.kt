@@ -36,7 +36,7 @@ fun AdminMainScreen(navController: NavHostController) {
                 "admin_hoy" -> AdminAgendaHoyScreen(navController = navController)
                 "admin_personal" -> AdminPersonalScreen(navController = navController)
                 "admin_servicios" -> AdminServiciosScreen(navController = navController)
-                "admin_perfil" -> AdminPerfilScreen(navController = navController) // Pronto la crearemos
+                "admin_perfil" -> AdminPerfilScreen(navController = navController)
             }
         }
     }

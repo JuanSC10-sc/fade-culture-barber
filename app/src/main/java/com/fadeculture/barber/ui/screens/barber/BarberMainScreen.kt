@@ -36,7 +36,7 @@ fun BarberMainScreen(rootNavController: NavHostController) {
                 navController = internalNavController,
                 startDestination = BarberNavItem.Home.route
             ) {
-                // 1. Pestaña de Inicio (Home)
+                // Pestaña de Inicio (Home)
                 composable(BarberNavItem.Home.route) {
                     BarberHomeScreen(
                         navController = rootNavController,
@@ -50,17 +50,17 @@ fun BarberMainScreen(rootNavController: NavHostController) {
                     )
                 }
 
-                // 2. Pestaña de Agenda (Trabajo del día)
+                // Pestaña de Agenda (Trabajo del día)
                 composable(BarberNavItem.Agenda.route) {
                     BarberAgendaScreen(navController = rootNavController)
                 }
 
-                // 3. Pestaña de Historial
+                // Pestaña de Historial
                 composable(BarberNavItem.Historial.route) {
                     BarberHistorialScreen(navController = rootNavController) //
                 }
 
-                // 4. Pestaña de Perfil
+                // Pestaña de Perfil
                 composable(BarberNavItem.Perfil.route) {
                     BarberPerfilScreen(navController = rootNavController) //
                 }

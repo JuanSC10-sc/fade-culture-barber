@@ -63,7 +63,7 @@ fun AdminAgendaScreen(
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
 
-    // Colores premium restaurados
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -72,7 +72,7 @@ fun AdminAgendaScreen(
     val tabs = listOf("Horario del Día", "Bloqueos Temporales")
     val calendar = Calendar.getInstance()
 
-    // --- ESTADOS: HORARIO DIARIO ---
+    // ESTADOS: HORARIO DIARIO
     var fechaSeleccionada by remember {
         mutableStateOf(String.format("%04d-%02d-%02d", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH)))
     }
@@ -85,14 +85,14 @@ fun AdminAgendaScreen(
     var tTInicio by remember { mutableStateOf("14:00") }
     var tTFin by remember { mutableStateOf("19:00") }
 
-    // --- ESTADOS: BLOQUEOS TEMPORALES ---
+    // ESTADOS: BLOQUEOS TEMPORALES
     var fechaBloqueo by remember { mutableStateOf("") }
     var horaBloqueoInicio by remember { mutableStateOf("") }
     var horaBloqueoFin by remember { mutableStateOf("") }
     var motivoBloqueo by remember { mutableStateOf("") }
     var listaBloqueos by remember { mutableStateOf<List<BloqueoAgenda>>(emptyList()) }
 
-    // 1. Cargar el Horario del Día seleccionado
+    // Cargar el Horario del Día seleccionado
     LaunchedEffect(fechaSeleccionada, barberId) {
         db.collection("barberos").document(barberId)
             .collection("horarios_diarios").document(fechaSeleccionada).get()
@@ -116,7 +116,7 @@ fun AdminAgendaScreen(
             }
     }
 
-    // 2. Escuchar la subcolección de Bloqueos
+    // Escuchar la subcolección de Bloqueos
     LaunchedEffect(barberId) {
         db.collection("barberos").document(barberId).collection("bloqueos")
             .addSnapshotListener { snapshot, error ->

@@ -54,7 +54,7 @@ fun AdminHomeScreen(
     ) {
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- CABECERA PRINCIPAL ---
+        // CABECERA PRINCIPAL
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
@@ -75,7 +75,7 @@ fun AdminHomeScreen(
         Text(text = "Accesos Rápidos", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- GRID DE ACCESOS RÁPIDOS ---
+        // GRID DE ACCESOS RÁPIDOS
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             DashboardCard(
                 modifier = Modifier.weight(1f),

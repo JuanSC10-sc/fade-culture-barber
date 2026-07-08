@@ -34,7 +34,7 @@ fun BarberHistorialScreen(navController: NavHostController) {
     val auth = FirebaseAuth.getInstance()
     val userId = auth.currentUser?.uid
 
-    // Colores de la marca
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -49,7 +49,7 @@ fun BarberHistorialScreen(navController: NavHostController) {
     var fechaFiltroVisual by remember { mutableStateOf("") } // DD/MM/YYYY
     val calendar = Calendar.getInstance()
 
-    // 1. Escuchar TODAS las citas del barbero
+    // Escuchar TODAS las citas del barbero
     LaunchedEffect(userId) {
         if (userId != null) {
             db.collection("citas")
@@ -74,7 +74,7 @@ fun BarberHistorialScreen(navController: NavHostController) {
         }
     }
 
-    // 2. Lógica de Filtrado (Solo Históricas + Fecha Seleccionada)
+    // Lógica de Filtrado (Solo Históricas + Fecha Seleccionada)
     val citasHistorial = todasLasCitas.filter { cita ->
         // Filtramos por estado
         val esHistorica = cita.estado == "finalizada" || cita.estado == "cancelada"

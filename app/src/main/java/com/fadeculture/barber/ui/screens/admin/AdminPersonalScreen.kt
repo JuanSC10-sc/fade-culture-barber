@@ -73,7 +73,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
     val db = FirebaseFirestore.getInstance()
     val scrollState = rememberScrollState()
 
-    // Colores premium
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -92,7 +92,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // Control de visibilidad de contraseñas (Ojitos)
+    // Control de visibilidad de contraseñas
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
@@ -176,7 +176,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
                     onBack = { barberoAgendaSeleccionado = null }
                 )
             } else if (isFormOpen) {
-                // --- FORMULARIO DE AGREGAR / EDITAR BARBERO (Con scroll para evitar recortes) ---
+                // --- FORMULARIO DE AGREGAR / EDITAR BARBERO (Con scroll) ---
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -226,9 +226,9 @@ fun AdminPersonalScreen(navController: NavHostController) {
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Ocultamos las credenciales en modo Edición para proteger la seguridad del usuario existente
+                    // Ocultamos las credenciales en modo Edición
                     if (barberoSeleccionadoEdicion == null) {
-                        // Campo Contraseña con Ojito
+                        // Campo Contraseña
                         AdminPasswordField(
                             value = password,
                             onValueChange = { password = it },
@@ -239,7 +239,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
                         )
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Campo Confirmar Contraseña con Ojito
+                        // Campo Confirmar Contraseña
                         AdminPasswordField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
@@ -325,8 +325,8 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                     )
 
                                     if (barberoSeleccionadoEdicion == null) {
-                                        // --- REGISTRO SEGURO DE CREDENCIALES ---
-                                        // Creamos una app Firebase secundaria limpia en memoria para registrar las credenciales del barbero sin tumbar la sesión del Administrador actual
+                                        // --- REGISTRO CREDENCIALES ---
+                                        // Creamos una app Firebase secundaria limpia en memoria para registrar las credenciales del barbero
                                         val secondaryApp = FirebaseApp.getApps(context).firstOrNull { it.name == "Secondary" }
                                             ?: FirebaseApp.initializeApp(context, FirebaseApp.getInstance().options, "Secondary")
                                         val secondaryAuth = FirebaseAuth.getInstance(secondaryApp)
@@ -336,11 +336,11 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                                 if (authTask.isSuccessful) {
                                                     val bUid = authTask.result?.user?.uid ?: ""
 
-                                                    // 1. Guardamos en la colección de barberos para la app
+                                                    // Guardamos en la colección de barberos para la app
                                                     db.collection("barberos").document(bUid).set(barberoMap)
 
-                                                    // 2. Guardamos en la colección central de "users" con el rol "barbero" para que LoginScreen lo redireccione correctamente
-                                                    // 2. Guardamos en TU colección central "usuarios" con el campo "rol"
+                                                    // Guardamos en la colección central de "users" con el rol "barbero" para que LoginScreen lo redireccione correctamente
+                                                    // Guardamos en la colección central "usuarios" con el campo "rol"
                                                     val userRoleMap = hashMapOf(
                                                         "nombres" to nombres,
                                                         "correo" to email,
@@ -357,7 +357,7 @@ fun AdminPersonalScreen(navController: NavHostController) {
                                                 }
                                             }
                                     } else {
-                                        // --- ACTUALIZACIÓN DE DATOS REGULARES ---
+                                        // ACTUALIZACIÓN DE DATOS
                                         db.collection("barberos")
                                             .document(barberoSeleccionadoEdicion!!.id)
                                             .set(barberoMap)
@@ -495,7 +495,7 @@ fun BarberoCard(
     }
 }
 
-// --- Input personalizado de Contraseña con Ojito ---
+// --- Input personalizado de Contraseña ---
 @Composable
 fun AdminPasswordField(
     value: String,

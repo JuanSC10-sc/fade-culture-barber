@@ -40,7 +40,7 @@ fun BarberPerfilScreen(navController: NavHostController) {
     val currentUser = auth.currentUser
     val scrollState = rememberScrollState()
 
-    // Colores corporativos
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -58,11 +58,11 @@ fun BarberPerfilScreen(navController: NavHostController) {
     var contrasenaNueva by remember { mutableStateOf("") }
     var procesandoContrasena by remember { mutableStateOf(false) }
 
-    // Estados para visibilidad ("Ojito")
+    // Estados para visibilidad
     var actualVisible by remember { mutableStateOf(false) }
     var nuevaVisible by remember { mutableStateOf(false) }
 
-    // 1. Cargar Datos del Especialista desde Firestore
+    // Cargar Datos del Especialista desde Firestore
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null) {
             db.collection("usuarios").document(currentUser.uid).get()

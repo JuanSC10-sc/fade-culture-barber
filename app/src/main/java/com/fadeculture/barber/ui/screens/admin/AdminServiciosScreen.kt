@@ -69,9 +69,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun AdminServiciosScreen(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
-    val scrollState = rememberScrollState() // Para prevenir que el teclado tape los campos
+    val scrollState = rememberScrollState()
 
-    // Colores premium
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -112,7 +112,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                             precioSoles = doc.getDouble("precioSoles") ?: 0.0,
                             duracionMinutos = doc.getLong("duracionMinutos")?.toInt() ?: 30,
                             imagenUrl = doc.getString("imagenUrl") ?: "",
-                            categoria = doc.getString("categoria") ?: "Corte", // 👈 RECUPERAMOS LA CATEGORÍA
+                            categoria = doc.getString("categoria") ?: "Corte",
                             estadoActivo = doc.getBoolean("estadoActivo") ?: true
                         )
                     }
@@ -129,7 +129,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
             precio = servicioSeleccionadoEdicion!!.precioSoles.toString()
             duracion = servicioSeleccionadoEdicion!!.duracionMinutos.toString()
             imagenUrl = servicioSeleccionadoEdicion!!.imagenUrl
-            categoria = servicioSeleccionadoEdicion!!.categoria // 👈 SETEAMOS LA CATEGORÍA AL EDITAR
+            categoria = servicioSeleccionadoEdicion!!.categoria
         } else {
             titulo = ""
             descripcion = ""
@@ -165,7 +165,7 @@ fun AdminServiciosScreen(navController: NavHostController) {
                 .background(darkBackground)
         ) {
             if (isFormOpen) {
-                // --- VISTA: FORMULARIO ---
+                // VISTA: FORMULARIO
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

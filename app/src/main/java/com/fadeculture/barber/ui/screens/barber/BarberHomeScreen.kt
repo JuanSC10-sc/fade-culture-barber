@@ -66,7 +66,7 @@ fun BarberHomeScreen(
         val userId = auth.currentUser?.uid
 
         if (userId != null) {
-            // 1. Buscamos el nombre del barbero
+            // Buscamos el nombre del barbero
             db.collection("usuarios").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
@@ -79,7 +79,7 @@ fun BarberHomeScreen(
                     nombreBarbero = "Barbero"
                 }
 
-            // 2. Buscamos el próximo cliente pendiente para este barbero
+            // Buscamos el próximo cliente pendiente para este barbero
             db.collection("citas")
                 .whereEqualTo("barberoId", userId)
                 .whereEqualTo("estado", "pendiente")

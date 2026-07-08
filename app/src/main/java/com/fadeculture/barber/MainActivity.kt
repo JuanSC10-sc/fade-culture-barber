@@ -12,11 +12,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // 1. Creamos el controlador de navegación necesario
-
-            // 2. Llamamos directamente a la pantalla de la agenda
-
-
           val navController = rememberNavController()
 
             // grafo de navegación

@@ -31,7 +31,6 @@ fun ClientMainScreen(navController: NavHostController) {
         },
         containerColor = darkBackground
     ) { paddingValues ->
-        // El Box ocupa el espacio restante encima de la barra
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (currentRoute) {
                 "client_home" -> ClientHomeScreen(
@@ -40,7 +39,7 @@ fun ClientMainScreen(navController: NavHostController) {
                 )
                 "client_reservar" -> ClientReservarScreen(navController)
                 "client_mis_citas" -> ClientMisCitasScreen()
-                "client_catalogo" -> CatalogoScreen() // Tu pantalla de catálogo actual
+                "client_catalogo" -> CatalogoScreen()
                 "client_perfil" -> ClientPerfilScreen(navController)
             }
         }

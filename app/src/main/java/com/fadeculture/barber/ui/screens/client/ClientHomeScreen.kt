@@ -67,7 +67,7 @@ fun ClientHomeScreen(
         val userId = auth.currentUser?.uid
 
         if (userId != null) {
-            // 1. Buscamos el nombre del usuario
+            // Buscamos el nombre del usuario
             db.collection("usuarios").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
@@ -80,7 +80,7 @@ fun ClientHomeScreen(
                     nombreCliente = "Cliente"
                 }
 
-            // 2. Buscamos la cita pendiente más cercana de forma dinámica
+            // Buscamos la cita pendiente más cercana de forma dinámica
             db.collection("citas")
                 .whereEqualTo("clienteId", userId)
                 .whereEqualTo("estado", "pendiente")
@@ -186,7 +186,7 @@ fun ClientHomeScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // TARJETA DE PRÓXIMA CITA DESTACADA (DINÁMICA Y CLIQUEABLE)
+        // TARJETA DE PRÓXIMA CITA DESTACADA
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -221,7 +221,7 @@ fun ClientHomeScreen(
                 } else if (proximaCita != null) {
                     val cita = proximaCita!!
 
-                    // Convertimos el formato YYYY-MM-DD a DD/MM/YYYY para que se vea ordenado en el Home
+                    // Convertimos el formato YYYY-MM-DD a DD/MM/YYYY
                     val partesFecha = cita.fecha.split("-")
                     val fechaFormateada = if (partesFecha.size == 3) "${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}" else cita.fecha
 

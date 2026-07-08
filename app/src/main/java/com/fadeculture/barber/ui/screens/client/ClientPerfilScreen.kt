@@ -40,7 +40,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
     val currentUser = auth.currentUser
     val scrollState = rememberScrollState()
 
-    // Colores de la marca
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
@@ -63,7 +63,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
     var actualVisible by remember { mutableStateOf(false) }
     var nuevaVisible by remember { mutableStateOf(false) }
 
-    // 1. Cargar Datos del Cliente desde Firestore al iniciar
+    // Cargar Datos del Cliente desde Firestore al iniciar
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null) {
             db.collection("usuarios").document(currentUser.uid).get()
@@ -104,7 +104,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 Text("Gestiona los datos de tu cuenta de acceso", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo: Correo Electrónico (Deshabilitado, solo lectura por seguridad)
+                // Campo: Correo Electrónico (Deshabilitado, solo lectura)
                 OutlinedTextField(
                     value = correo,
                     onValueChange = {},
@@ -270,7 +270,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Por seguridad, ingresa tus credenciales actuales para realizar el cambio.", color = Color.Gray, fontSize = 14.sp)
 
-                    // Campo de Contraseña Actual con Ojito
+                    // Campo de Contraseña Actual
                     OutlinedTextField(
                         value = contrasenaActual,
                         onValueChange = { contrasenaActual = it },
@@ -286,7 +286,7 @@ fun ClientPerfilScreen(navController: NavHostController) {
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = goldAccent, focusedLabelColor = goldAccent, focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                     )
 
-                    // Campo de Nueva Contraseña con Ojito
+                    // Campo de Nueva Contraseña
                     OutlinedTextField(
                         value = contrasenaNueva,
                         onValueChange = { contrasenaNueva = it },

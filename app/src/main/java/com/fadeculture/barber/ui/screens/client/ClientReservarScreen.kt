@@ -115,7 +115,6 @@ fun ClientReservarScreen(navController: NavHostController) {
                                         val tMActivo = doc.getBoolean("turnoMananaActivo") ?: false
                                         val tTActivo = doc.getBoolean("turnoTardeActivo") ?: false
 
-                                        // CORRECCIÓN APLICADA AQUÍ 👇
                                         if (tMActivo) horasValidas.addAll(generarBloquesLibres(doc.getString("tMInicio") ?: "08:00", doc.getString("tMFin") ?: "12:00", duracionServicio, todosLosTiemposOcupados))
                                         if (tTActivo) horasValidas.addAll(generarBloquesLibres(doc.getString("tTInicio") ?: "14:00", doc.getString("tTFin") ?: "19:00", duracionServicio, todosLosTiemposOcupados))
                                     }

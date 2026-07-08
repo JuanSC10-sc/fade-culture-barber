@@ -25,27 +25,26 @@ import com.fadeculture.barber.ui.screens.barber.BarberMainScreen
 
 @Composable
 fun SetupNavGraph(navController: NavHostController) {
-    // startDestination Splash Screen
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
-        // 1. Pantalla de Splash
+        // Pantalla de Splash
         composable(route = Screen.Splash.route) {
             SplashScreen(navController = navController)
         }
 
-        // 2. Pantalla de Login
+        // Pantalla de Login
         composable(route = Screen.Login.route) {
             LoginScreen(navController = navController)
         }
 
-        // 3. Pantalla de Registro
+        // Pantalla de Registro
         composable(route = Screen.Register.route) {
             RegisterScreen(navController = navController)
         }
 
-        // 4. Dashboard del Cliente
+        // Dashboard del Cliente
         composable(route = Screen.ClientMain.route) {
             ClientMainScreen(navController = navController)
         }
@@ -64,13 +63,12 @@ fun SetupNavGraph(navController: NavHostController) {
             ClientComprobanteScreen(navController = navController, citaId = citaId)
         }
 
-        // 5. Dashboard del Barbero
-        // 5. Dashboard del Barbero
+        // Dashboard del Barbero
         composable(route = Screen.BarberMain.route) { //
             BarberMainScreen(rootNavController = navController) //
         }
 
-        // 6. Dashboard del Administrador / Recepción
+        // Dashboard del Administrador
         composable(route = Screen.AdminHome.route) {
             AdminMainScreen(navController = navController)
         }

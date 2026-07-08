@@ -35,13 +35,13 @@ fun AdminPerfilScreen(navController: NavHostController) {
     val currentUser = auth.currentUser
     val scrollState = rememberScrollState()
 
-    // Colores corporativos
+    // Colores
     val darkBackground = Color(0xFF121212)
     val cardBackground = Color(0xFF1E1E1E)
     val goldAccent = Color(0xFFD4AF37)
     val errorColor = Color(0xFFEF5350)
 
-    // Estados de Datos (Mapeados de Firestore)
+    // Estados de Datos
     var nombres by remember { mutableStateOf("") }
     var apellidos by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
@@ -55,11 +55,11 @@ fun AdminPerfilScreen(navController: NavHostController) {
     var contrasenaNueva by remember { mutableStateOf("") }
     var procesandoContrasena by remember { mutableStateOf(false) }
 
-    // Estados para visibilidad ("Ojito")
+    // Estados para visibilidad
     var actualVisible by remember { mutableStateOf(false) }
     var nuevaVisible by remember { mutableStateOf(false) }
 
-    // 1. Cargar Datos del Administrador
+    // Cargar Datos del Administrador
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null) {
             db.collection("usuarios").document(currentUser.uid).get()
@@ -99,7 +99,7 @@ fun AdminPerfilScreen(navController: NavHostController) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- AVATAR DEL ADMINISTRADOR ---
+                // AVATAR DEL ADMINISTRADOR
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -112,7 +112,7 @@ fun AdminPerfilScreen(navController: NavHostController) {
                 Text(text = "Administrador Total", color = goldAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // --- FORMULARIO DE DATOS ---
+                // FORMULARIO DE DATOS
                 // Correo (Solo Lectura)
                 OutlinedTextField(
                     value = correo,
@@ -247,7 +247,7 @@ fun AdminPerfilScreen(navController: NavHostController) {
         }
     }
 
-    // --- DIÁLOGO DE SEGURIDAD PARA CAMBIO DE CONTRASEÑA ---
+    // DIÁLOGO DE SEGURIDAD PARA CAMBIO DE CONTRASEÑA
     if (showPasswordDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -302,7 +302,7 @@ fun AdminPerfilScreen(navController: NavHostController) {
                 Button(
                     enabled = !procesandoContrasena,
                     onClick = {
-                        // Validaciones exactas
+                        // Validaciones
                         if (contrasenaActual.isBlank() || contrasenaNueva.isBlank()) {
                             Toast.makeText(context, "Llene ambos campos", Toast.LENGTH_SHORT).show()
                             return@Button
